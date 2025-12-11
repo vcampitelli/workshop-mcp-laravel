@@ -5,13 +5,22 @@ declare(strict_types=1);
 namespace App\Mcp;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types;
+use Illuminate\JsonSchema\Types\ObjectType;
 use Illuminate\Support\Facades\Schema;
 
 class DatabaseToSchema
 {
     private JsonSchema $schema;
+
+    /**
+     * Objetos já mapeados para evitar reprocessar schemas
+     * @var array<string, Types\ObjectType>
+     */
+    private array $pool = [];
 
     public function __construct()
     {
@@ -19,22 +28,99 @@ class DatabaseToSchema
     }
 
     /**
-     * Map a database table to a JSON Schema
+     * Retorna o schema de uma model
+     * @param Model $model
+     * @return Types\ObjectType
+     */
+    public function mapModel(Model $model): Types\ObjectType
+    {
+        return $this->mapTable(
+            table: $model->getTable(),
+            connection: $model->getConnectionName() ?? $model->getConnection()->getName(),
+        );
+    }
+
+    /**
+     * Retorna o schema de uma tabela
+     * @param string $table Nome da tabela
+     * @param string $connection Nome da conexão (ex: mysql)
+     * @return ObjectType
      */
     public function mapTable(string $table, string $connection): Types\ObjectType
     {
+        $key = "{$connection}:{$table}";
+
+        if (!isset($this->pool[$key])) {
+            $schema = Schema::connection($connection);
+            $this->pool[$key] = $this->doMapTable($schema, $table);
+        }
+
+        return $this->pool[$key];
+    }
+
+    /**
+     * Retorna o schema de uma tabela
+     * @param Builder $schema Schema builder do banco de dados
+     * @param string $table Nome da tabela
+     * @return ObjectType
+     */
+    protected function doMapTable(Builder $schema, string $table): Types\ObjectType
+    {
+        $properties = $this->getColumns($schema, $table);
+        $properties = $this->getForeignKeys($schema, $table, $properties);
+
+        return $this->schema->object($properties);
+    }
+
+    /**
+     * Retorna as foreign keys de uma tabela
+     * @param Builder $schema Schema builder do banco de dados
+     * @param string $table Nome da tabela
+     */
+    protected function getForeignKeys(Builder $schema, string $table, array $properties): array
+    {
+        /**
+         * @var list<array{name: string, columns: string[], foreign_schema: string, foreign_table: string, foreign_columns: string[], on_update: string, on_delete: string}> $foreignKeys
+         */
+        $foreignKeys = $schema->getForeignKeys($table);
+        foreach ($foreignKeys as $key) {
+            // Evitando recursão
+            if ($key['foreign_table'] === $table) {
+                continue;
+            }
+
+            // Só lidando com índices de uma única coluna, por enquanto
+            if (count($key['columns']) !== 1) {
+                continue;
+            }
+
+            // @TODO buscar da Model o nome da relação
+            if (!\str_ends_with($key['columns'][0], '_id')) {
+                continue;
+            }
+            $column = \substr($key['columns'][0], 0, -3);
+
+            $properties[$column] = $this->doMapTable($schema, $key['foreign_table']);
+        }
+
+        return $properties;
+    }
+
+    /**
+     * Retorna as colunas de uma tabela
+     * @param Builder $schema Schema builder do banco de dados
+     * @param string $table Nome da tabela
+     */
+    protected function getColumns(Builder $schema, string $table): array
+    {
         $properties = [];
 
-        $schema = Schema::connection($connection);
         $columns = $schema->getColumns($table);
-
-        // @TODO
-        // $foreignKeys = $schema->getForeignKeys($table);
         foreach ($columns as $column) {
             $properties[$column['name']] = $this->mapColumnToSchema($column);
         }
 
-        return $this->schema->object($properties);
+        return $properties;
     }
 
     /**
@@ -42,8 +128,7 @@ class DatabaseToSchema
      */
     protected function mapColumnToSchema(array $column): Types\Type
     {
-        $type = $this->mapType($column)->required();
-        $schema = [];
+        $type = $this->mapTypeFromColumn($column)->required();
 
         // Add description if comment exists
         if (!empty($column['comment'])) {
@@ -52,18 +137,13 @@ class DatabaseToSchema
         // @TODO description
 
         // Handle string lengths
-        if (in_array($column['type_name'], ['varchar', 'char', 'text'])) {
-            if (isset($column['length']) && $column['length'] > 0) {
-                if ($type instanceof Types\StringType) {
-                    $type->max($column['length']);
-                }
-            }
+        if (($type instanceof Types\StringType) && (($column['length'] ?? 0) > 0)) {
+            $type->max($column['length']);
         }
 
-        $isNumericType = ($type instanceof Types\IntegerType) || ($type instanceof Types\NumberType);
-
         // Handle numeric constraints
-        if (($isNumericType) && (\str_ends_with($column['type'], ' unsigned'))) {
+        if ((\str_ends_with($column['type'], ' unsigned')) &&
+            (($type instanceof Types\IntegerType) || ($type instanceof Types\NumberType))) {
             $type->min(0);
         }
 
@@ -72,28 +152,22 @@ class DatabaseToSchema
             $type->default($column['default']);
         }
 
-        // Handle enums
-        if ($column['type_name'] === 'enum' && !empty($column['enum_values'])) {
-            $schema['enum'] = $column['enum_values'];
-        }
-
         // Handle nullable
         if ($column['nullable'] !== null) {
             $type->nullable($column['nullable']);
         }
 
-        if (!empty($schema)) {
-            dd($column, $schema);
-        }
+        // @TODO checar outros tipos (ex: enum)
 
         return $type;
     }
 
     /**
-     * Map MySQL type to JSON Schema type
+     * Mapeia o tipo de coluna no MySQL para um tipo do JSONSchema
+     * @param array{name: string, type: string, type_name: string} $column Dados da coluna retornados pelo Schema Builder
      * @link https://dev.mysql.com/doc/refman/8.4/en/integer-types.html
      */
-    protected function mapType(array $column): Types\Type
+    protected function mapTypeFromColumn(array $column): Types\Type
     {
         $type = $column['type_name'];
         if (\str_ends_with($column['type'], ' unsigned')) {
@@ -144,19 +218,5 @@ class DatabaseToSchema
         }
 
         return $type;
-    }
-
-    /**
-     * Cast default value to appropriate type
-     */
-    protected function castDefault(mixed $default, string $type): mixed
-    {
-        return match ($this->mapType($type)) {
-            'integer' => (int) $default,
-            'number' => (float) $default,
-            'boolean' => (bool) $default,
-            'object' => json_decode($default, true),
-            default => (string) $default,
-        };
     }
 }
