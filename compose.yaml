@@ -1,0 +1,22 @@
+services:
+  api:
+    build:
+      context: .
+    volumes:
+      - ./:/app
+      - vendor:/app/vendor
+    ports:
+      - "8000:8000"
+
+  db:
+    image: mariadb:12
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+    volumes:
+      - db:/var/lib/mysql
+
+volumes:
+  db:
+    driver: local
+  vendor:
+    driver: local

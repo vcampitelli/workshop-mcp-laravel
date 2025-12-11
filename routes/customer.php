@@ -1,11 +1,11 @@
 <?php
 
 // Authenticated User Routes
-use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Customer\CartController;
 use App\Http\Controllers\Customer\OrderController;
 use App\Http\Controllers\Customer\ReviewController;
 use App\Http\Controllers\Customer\ProfileController;
+use App\Http\Controllers\Vendor\WishlistController;
 
 Route::group(['middleware' => ['auth']], function () {
     // Cart Management
