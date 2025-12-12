@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Mcp;
+namespace App\Mcp\Mappers;
 
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Schema\Builder;
+use Illuminate\Database\Schema\Builder as DatabaseBuilder;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types;
-use Illuminate\JsonSchema\Types\ObjectType;
 use Illuminate\Support\Facades\Schema;
 
 class DatabaseToSchema
@@ -30,13 +29,16 @@ class DatabaseToSchema
     /**
      * Retorna o schema de uma model
      * @param Model $model
+     * @param array<string, Model> $relations Relacionamentos dessa model
      * @return Types\ObjectType
      */
-    public function mapModel(Model $model): Types\ObjectType
+    public function mapModel(Model $model, array $relations = []): Types\ObjectType
     {
         return $this->mapTable(
             table: $model->getTable(),
             connection: $model->getConnectionName() ?? $model->getConnection()->getName(),
+            hidden: $model->getHidden(),
+            relations: $relations,
         );
     }
 
@@ -44,15 +46,21 @@ class DatabaseToSchema
      * Retorna o schema de uma tabela
      * @param string $table Nome da tabela
      * @param string $connection Nome da conexão (ex: mysql)
-     * @return ObjectType
+     * @param array<string> $hidden Colunas a ignorar
+     * @param array<string, Model> $relations Relacionamentos dessa model
+     * @return Types\ObjectType
      */
-    public function mapTable(string $table, string $connection): Types\ObjectType
-    {
+    public function mapTable(
+        string $table,
+        string $connection,
+        array $hidden = [],
+        array $relations = [],
+    ): Types\ObjectType {
         $key = "{$connection}:{$table}";
 
         if (!isset($this->pool[$key])) {
             $schema = Schema::connection($connection);
-            $this->pool[$key] = $this->doMapTable($schema, $table);
+            $this->pool[$key] = $this->doMapTable($schema, $table, $hidden, $relations);
         }
 
         return $this->pool[$key];
@@ -60,58 +68,35 @@ class DatabaseToSchema
 
     /**
      * Retorna o schema de uma tabela
-     * @param Builder $schema Schema builder do banco de dados
+     * @param DatabaseBuilder $schema Schema builder do banco de dados
      * @param string $table Nome da tabela
-     * @return ObjectType
+     * @param array<string> $hidden Colunas a ignorar
+     * @param array<string, Model> $relations Relacionamentos dessa model
+     * @return Types\ObjectType
      */
-    protected function doMapTable(Builder $schema, string $table): Types\ObjectType
-    {
+    protected function doMapTable(
+        DatabaseBuilder $schema,
+        string $table,
+        array $hidden = [],
+        array $relations = [],
+    ): Types\ObjectType {
         $properties = $this->getColumns($schema, $table);
-        $properties = $this->getForeignKeys($schema, $table, $properties);
+        if (!empty($hidden)) {
+            $properties = \array_diff_key($properties, \array_flip($hidden));
+        }
+        foreach ($relations as $field => $model) {
+            $properties[$field] = $this->mapModel($model);
+        }
 
         return $this->schema->object($properties);
     }
 
     /**
-     * Retorna as foreign keys de uma tabela
-     * @param Builder $schema Schema builder do banco de dados
-     * @param string $table Nome da tabela
-     */
-    protected function getForeignKeys(Builder $schema, string $table, array $properties): array
-    {
-        /**
-         * @var list<array{name: string, columns: string[], foreign_schema: string, foreign_table: string, foreign_columns: string[], on_update: string, on_delete: string}> $foreignKeys
-         */
-        $foreignKeys = $schema->getForeignKeys($table);
-        foreach ($foreignKeys as $key) {
-            // Evitando recursão
-            if ($key['foreign_table'] === $table) {
-                continue;
-            }
-
-            // Só lidando com índices de uma única coluna, por enquanto
-            if (count($key['columns']) !== 1) {
-                continue;
-            }
-
-            // @TODO buscar da Model o nome da relação
-            if (!\str_ends_with($key['columns'][0], '_id')) {
-                continue;
-            }
-            $column = \substr($key['columns'][0], 0, -3);
-
-            $properties[$column] = $this->doMapTable($schema, $key['foreign_table']);
-        }
-
-        return $properties;
-    }
-
-    /**
      * Retorna as colunas de uma tabela
-     * @param Builder $schema Schema builder do banco de dados
+     * @param DatabaseBuilder $schema Schema builder do banco de dados
      * @param string $table Nome da tabela
      */
-    protected function getColumns(Builder $schema, string $table): array
+    protected function getColumns(DatabaseBuilder $schema, string $table): array
     {
         $properties = [];
 
@@ -187,9 +172,8 @@ class DatabaseToSchema
             'int' => $this->schema->integer()->min(2147483648)->max(2147483647),
             'int unsigned' => $this->schema->integer()->min(0)->max(4294967295),
 
-            // como aqui depende da precisão configurada no PHP, optei por não usar o PHP_INT_MAX
             'bigint' => $this->schema->integer()->min(\PHP_INT_MIN)->max(\PHP_INT_MAX),
-            'bigint unsigned' => $this->schema->integer()->min(0)->max(\PHP_INT_MAX),
+            'bigint unsigned' => $this->schema->integer()->min(0)->max(\PHP_INT_MAX), // na verdade é 2**64-1
 
             'float', 'double', 'decimal' => $this->schema->number(),
             'float unsigned', 'double unsigned', 'decimal unsigned' => $this->schema->number()->min(0),

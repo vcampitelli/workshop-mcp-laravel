@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Validation\OrderValidation;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -13,10 +14,9 @@ class OrderController extends Controller
     {
         $query = Order::query();
 
-        $filters = $request->validate([
-            'after' => ['nullable', 'date'],
-            'before' => ['nullable', 'date'],
-        ]);
+        $filters = $request->validate(
+            (new OrderValidation)->getRules()
+        );
 
         if (!empty($filters['after'])) {
             $query->where('created_at', '>=', $filters['after']);
@@ -26,9 +26,12 @@ class OrderController extends Controller
             $query->where('created_at', '<=', $filters['before']);
         }
 
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', '=', $filters['user_id']);
+        }
+
         return $query
-            // @TODO
-//            ->with(['status', 'user'])
+            ->with(['status', 'user'])
             ->get();
     }
 

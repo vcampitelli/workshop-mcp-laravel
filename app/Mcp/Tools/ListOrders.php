@@ -3,6 +3,9 @@
 namespace App\Mcp\Tools;
 
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Validation\OrderValidation;
+use App\Mcp\Mappers\DatabaseToSchema;
+use App\Mcp\Mappers\ValidationToSchema;
 use App\Models\Order;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Http\Request as HttpRequest;
@@ -42,10 +45,12 @@ class ListOrders extends Tool
      */
     public function schema(JsonSchema $schema): array
     {
-        return [
-            'after' => $schema->string()->format('date-time')->description('Pedidos depois dessa data'),
-            'before' => $schema->string()->format('date-time')->description('Pedidos antes dessa data'),
-        ];
+        /** @var ValidationToSchema $mapper */
+        $mapper = \app(ValidationToSchema::class);
+
+        return $mapper->map(
+            (new OrderValidation)->getRules()
+        );
     }
 
     /**
@@ -55,18 +60,15 @@ class ListOrders extends Tool
      */
     public function outputSchema(JsonSchema $schema): array
     {
-        $order = new Order();
-        // @TODO falar sobre os status e o usuário
-//        $status = new \App\Models\OrderStatus();
-//        $user = new \App\Models\User();
-        $mapper = new \App\Mcp\DatabaseToSchema();
+        /** @var DatabaseToSchema $mapper */
+        $mapper = \app(DatabaseToSchema::class);
         return [
             'orders' => $schema->array()->items(
-                $mapper->mapTable(
-                    $order->getTable(),
-                    $order->getConnectionName()
-                )
-            )
+                $mapper->mapModel(new Order(), [
+                    'status' => new \App\Models\OrderStatus(),
+                    'user' => new \App\Models\User(),
+                ]),
+            ),
         ];
     }
 }

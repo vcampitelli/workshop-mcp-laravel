@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
@@ -14,8 +14,8 @@ class Role extends Model
         'name',
     ];
 
-    public function permissions(): BelongsToMany
+    public function permissions(): HasMany
     {
-        return $this->belongsToMany(Permission::class);
+        return $this->hasMany(Permission::class);
     }
 }

@@ -31,6 +31,7 @@ class OrdersServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Tool>>
      */
     protected array $tools = [
+        Tools\FindUserId::class,
         Tools\ListOrders::class,
         Tools\ListRoutes::class,
     ];
