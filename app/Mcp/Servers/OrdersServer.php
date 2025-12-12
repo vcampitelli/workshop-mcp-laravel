@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Mcp\Servers;
 
 use App\Mcp\Prompts;
+use App\Mcp\Resources;
 use App\Mcp\Tools;
 use Laravel\Mcp\Server;
 
@@ -43,7 +46,7 @@ class OrdersServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Resource>>
      */
     protected array $resources = [
-        //
+        Resources\Guidelines::class,
     ];
 
     /**
