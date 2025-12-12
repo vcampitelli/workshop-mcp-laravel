@@ -10,16 +10,16 @@ class OrderStatusSeeder extends Seeder
     public function run(): void
     {
         $statuses = [
-            'Pending Payment',
-            'Processing',
-            'Confirmed',
-            'Shipped',
-            'Out for Delivery',
-            'Delivered',
-            'Cancelled',
-            'Refunded',
-            'Failed',
-            'On Hold',
+            'Pagamento pendente',
+            'Em processamento',
+            'Confirmado',
+            'Enviado',
+            'Saiu para entrega',
+            'Entregue',
+            'Cancelado',
+            'Reembolsado',
+            'Falha',
+            'Em espera',
         ];
 
         OrderStatus::insert(array_map(fn (string $name) => [
