@@ -43,21 +43,38 @@ class ValidationToSchema
 
     protected function mapRulesToType(array $rules): Types\Type
     {
-        $type = $this->schema->string();
+        $type = null;
+        foreach ($rules as $rule) {
+            if (!\is_string($rule)) {
+                continue;
+            }
+
+            if (($rule === 'numeric') || ($rule === 'decimal')) {
+                $type = $this->schema->number();
+                break;
+            }
+
+            if ((\str_starts_with($rule, 'exists:')) && (\str_ends_with($rule, 'id'))) {
+                $type = $this->schema->integer()->min(0);
+                break;
+            }
+        }
+        if ($type === null) {
+            $type = $this->schema->string();
+        }
 
         foreach ($rules as $rule) {
+            if ($rule instanceof TitleAttribute) {
+                $type->description($rule->title);
+                continue;
+            }
+
             if ($rule === 'date') {
                 $type->format('date-time');
             }
 
             if ($rule === 'required') {
                 $type->required();
-            } elseif ($rule === 'sometimes') {
-                $type->required(false);
-            }
-
-            if ($rule instanceof TitleAttribute) {
-                $type->description($rule->title);
             }
         }
 

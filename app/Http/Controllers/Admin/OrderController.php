@@ -30,6 +30,14 @@ class OrderController extends Controller
             $query->where('user_id', '=', $filters['user_id']);
         }
 
+        if (!empty($filters['amount_lt'])) {
+            $query->where('total_amount', '<=', $filters['amount_lt']);
+        }
+
+        if (!empty($filters['amount_gt'])) {
+            $query->where('total_amount', '>=', $filters['amount_gt']);
+        }
+
         return $query
             ->with(['status', 'user'])
             ->get();

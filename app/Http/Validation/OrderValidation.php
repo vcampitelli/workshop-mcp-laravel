@@ -14,9 +14,11 @@ class OrderValidation
     public function getRules(): array
     {
         return [
-            'user_id' => ['sometimes', 'exists:users,id'],
+            'user_id' => ['sometimes', 'exists:users,id', new TitleAttribute('ID do usuário')],
             'after' => ['sometimes', 'date', new TitleAttribute('Pedidos depois dessa data')],
             'before' => ['sometimes', 'date', new TitleAttribute('Pedidos antes dessa data')],
+            'amount_lt' => ['sometimes', 'numeric', new TitleAttribute('Valor menor que')],
+            'amount_gt' => ['sometimes', 'numeric', new TitleAttribute('Valor maior que')],
         ];
     }
 }
