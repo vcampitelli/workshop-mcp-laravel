@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Public\OrderController;
 use App\Http\Validation\OrderValidation;
 use App\Mcp\Mappers\DatabaseToSchema;
 use App\Mcp\Mappers\ValidationToSchema;
