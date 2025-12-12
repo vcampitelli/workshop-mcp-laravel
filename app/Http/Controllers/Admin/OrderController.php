@@ -26,6 +26,10 @@ class OrderController extends Controller
             $query->where('created_at', '<=', $filters['before']);
         }
 
+        if (!empty($filters['status_id'])) {
+            $query->where('status_id', '=', $filters['status_id']);
+        }
+
         if (!empty($filters['user_id'])) {
             $query->where('user_id', '=', $filters['user_id']);
         }

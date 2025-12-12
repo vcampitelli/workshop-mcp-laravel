@@ -31,6 +31,7 @@ class OrdersServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Tool>>
      */
     protected array $tools = [
+        Tools\FindStatusId::class,
         Tools\FindUserId::class,
         Tools\ListOrders::class,
         Tools\ListRoutes::class,
@@ -51,7 +52,7 @@ class OrdersServer extends Server
      * @var array<int, class-string<\Laravel\Mcp\Server\Prompt>>
      */
     protected array $prompts = [
-        // @TODO falar sobre os status e o usuário
+        Prompts\ListOrders::class,
         Prompts\ListRoutes::class,
     ];
 }
