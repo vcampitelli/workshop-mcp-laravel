@@ -33,7 +33,7 @@ class FindStatusId extends Tool
             return Response::error('Status não encontrado.');
         }
 
-        return Response::text($status->id);
+        return Response::text((string) $status->id);
     }
 
     /**

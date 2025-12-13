@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Vendor;
 use App\Models\Product;
 use App\Models\ProductTag;
 use App\Models\ProductStatus;
@@ -47,7 +46,6 @@ class ProductSeeder extends Seeder
         $lastProductId = 0;
 
         $categories = ProductCategory::all();
-        $vendors = Vendor::all();
         $attributes = ProductAttribute::all();
         $statuses = ProductStatus::all();
 
@@ -83,7 +81,6 @@ class ProductSeeder extends Seeder
 
             $products[] = [
                 'id'                => $productId,
-                'vendor_id'         => $vendors->random()->id,
                 'product_category_id' => $category->id,
                 'name'              => "Product " . ($i + 1),
                 'description'       => "Description for product " . ($i + 1),
@@ -149,7 +146,6 @@ class ProductSeeder extends Seeder
 
         foreach ($products as $productData) {
             $product = Product::create($productData);
-            $this->attachMedia($product);
         }
 
         // Bulk insert variants, and product-tag relationships
@@ -169,14 +165,5 @@ class ProductSeeder extends Seeder
 
         $options = $values[$attributeName] ?? ['Option 1', 'Option 2', 'Option 3'];
         return $options[array_rand($options)];
-    }
-
-    private function attachMedia(Product $product): void
-    {
-        $images = collect(Storage::disk('local')->files('demo-images'));
-
-        $product->addMediaFromDisk($images->random())
-            ->preservingOriginal()
-            ->toMediaCollection('featured_image');
     }
 }

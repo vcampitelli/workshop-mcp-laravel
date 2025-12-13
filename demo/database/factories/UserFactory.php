@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Role;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -41,83 +40,5 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
-    }
-
-    public function superAdmin(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'Super Admin')->first();
-
-            return ['role_id' => $role->id];
-        });
-    }
-
-    public function admin(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'Admin')->first();
-
-            return ['role_id' => $role->id];
-        });
-    }
-
-    public function vendorManager(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'Vendor Manager')->first();
-
-            return ['role_id' => $role->id];
-        });
-    }
-
-    public function vendor(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'Vendor')->first();
-
-            return [
-                'role_id' => $role->id,
-                'name'    => fake()->firstName() . ' Vendor Representative',
-            ];
-        });
-    }
-
-    public function customerService(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'Customer Service')->first();
-
-            return [
-                'role_id' => $role->id,
-                'name'    => 'CS - ' . fake()->name(),
-            ];
-        });
-    }
-
-    public function contentManager(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'Content Manager')->first();
-
-            return ['role_id' => $role->id];
-        });
-    }
-
-    public function user(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'User')->first();
-
-            return ['role_id' => $role->id];
-        });
-    }
-
-    public function guest(): static
-    {
-        return $this->state(function (array $attributes) {
-            $role = Role::where('name', 'Guest')->first();
-
-            return ['role_id' => $role->id];
-        });
     }
 }

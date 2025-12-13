@@ -37,7 +37,6 @@ class OrdersServer extends Server
         Tools\FindStatusId::class,
         Tools\FindUserId::class,
         Tools\ListOrders::class,
-        Tools\ListRoutes::class,
     ];
 
     /**
@@ -56,6 +55,5 @@ class OrdersServer extends Server
      */
     protected array $prompts = [
         Prompts\ListOrders::class,
-        Prompts\ListRoutes::class,
     ];
 }

@@ -4,7 +4,6 @@ namespace Database\Factories;
 
 use App\Models\User;
 use App\Models\Review;
-use App\Models\Vendor;
 use App\Models\Product;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,7 +22,6 @@ class ReviewFactory extends Factory
 
             'user_id'    => User::factory(),
             'product_id' => Product::factory(),
-            'vendor_id'  => Vendor::factory(),
         ];
     }
 }

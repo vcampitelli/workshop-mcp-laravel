@@ -34,7 +34,7 @@ class FindUserId extends Tool
             return Response::error('Usuário não encontrado.');
         }
 
-        return Response::text($user->id);
+        return Response::text((string) $user->id);
     }
 
     /**

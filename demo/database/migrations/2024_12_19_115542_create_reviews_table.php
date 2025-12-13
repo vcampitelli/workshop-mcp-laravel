@@ -11,7 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vendor_id')->constrained()->cascadeOnDelete();
             $table->tinyInteger('rating');
             $table->text('comment');
             $table->timestamps();

@@ -12,7 +12,7 @@ class ReviewSeeder extends Seeder
     public function run(): void
     {
         $users = User::pluck('id')->toArray();
-        $products = Product::with('vendor')->get();
+        $products = Product::all();
 
         $reviews = [];
 
@@ -22,7 +22,6 @@ class ReviewSeeder extends Seeder
                 $reviews[] = [
                     'user_id'    => $users[array_rand($users)],
                     'product_id' => $product->id,
-                    'vendor_id'  => $product->vendor_id,
                     'rating'     => rand(1, 5),
                     'comment'    => fake()->paragraph(),
                     'created_at' => now()->subDays(rand(1, 180)),
