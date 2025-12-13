@@ -1,0 +1,10 @@
+#default_model: "generic.llama3.2:3b-instruct-q8_0"
+default_model: "generic.llama3.1:8b-instruct-q8_0"
+generic:
+  api_key: "ollama"  # Default for Ollama, change as needed
+  base_url: "http://localhost:11434/v1"  # Default for Ollama
+mcp:
+  servers:
+    orders:
+      transport: "http"
+      url: "http://localhost:8000/mcp/orders"

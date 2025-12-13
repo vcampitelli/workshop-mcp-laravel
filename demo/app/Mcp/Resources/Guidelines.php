@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mcp\Resources;
 
-use App\Mcp\Mappers\ModelRelations;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
