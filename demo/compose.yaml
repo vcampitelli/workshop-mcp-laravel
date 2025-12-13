@@ -4,7 +4,6 @@ services:
       context: .
     volumes:
       - ./:/app
-#      - vendor:/app/vendor
     ports:
       - "8000:8000"
 
@@ -18,5 +17,3 @@ services:
 volumes:
   db:
     driver: local
-#  vendor:
-#    driver: local
