@@ -1,6 +1,7 @@
 <?php
 
 // Public Routes
+use App\Http\Controllers\Public\OrderController;
 use App\Http\Controllers\Public\ReviewController;
 use App\Http\Controllers\Public\ProductController;
 use App\Http\Controllers\Public\ProductCategoryController;
