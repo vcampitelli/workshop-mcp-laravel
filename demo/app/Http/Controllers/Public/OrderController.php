@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
-use App\Http\Validation\OrderValidation;
+use App\Http\Validation\OrderListValidation;
+use App\Http\Validation\OrderStoreValidation;
+use App\Http\Validation\OrderUpdateValidation;
+use App\Http\Validation\OrderStatusValidation;
 use App\Models\Order;
+use App\Models\OrderStatus;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -15,7 +20,7 @@ class OrderController extends Controller
         $query = Order::query();
 
         $filters = $request->validate(
-            (new OrderValidation)->getRules()
+            (new OrderListValidation)->getRules()
         );
 
         if (!empty($filters['after'])) {
@@ -34,11 +39,11 @@ class OrderController extends Controller
             $query->where('user_id', '=', $filters['user_id']);
         }
 
-        if (!empty($filters['amount_lt'])) {
+        if (isset($filters['amount_lt'])) {
             $query->where('total_amount', '<=', $filters['amount_lt']);
         }
 
-        if (!empty($filters['amount_gt'])) {
+        if (isset($filters['amount_gt'])) {
             $query->where('total_amount', '>=', $filters['amount_gt']);
         }
 
@@ -47,17 +52,52 @@ class OrderController extends Controller
             ->get();
     }
 
-    public function create() {}
+    public function create(): array
+    {
+        return ['statuses' => OrderStatus::all()];
+    }
 
-    public function store(Request $request) {}
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate((new OrderStoreValidation)->getRules());
+        $order = Order::create($data);
 
-    public function show(Order $order) {}
+        return response()->json($order->load(['status', 'user']), 201);
+    }
 
-    public function edit(Order $order) {}
+    public function show(Order $order): Order
+    {
+        return $order->load(['status', 'user']);
+    }
 
-    public function update(Request $request, Order $order) {}
+    public function edit(Order $order): array
+    {
+        return [
+            'order' => $order->load(['status', 'user']),
+            'statuses' => OrderStatus::all(),
+        ];
+    }
 
-    public function destroy(Order $order) {}
+    public function update(Request $request, Order $order): Order
+    {
+        $data = $request->validate((new OrderUpdateValidation)->getRules());
+        $order->update($data);
 
-    public function updateStatus(Order $order) {}
+        return $order->load(['status', 'user']);
+    }
+
+    public function destroy(Order $order): JsonResponse
+    {
+        $order->delete();
+
+        return response()->json(null, 204);
+    }
+
+    public function updateStatus(Request $request, Order $order): Order
+    {
+        $data = $request->validate((new OrderStatusValidation)->getRules());
+        $order->update($data);
+
+        return $order->load(['status', 'user']);
+    }
 }

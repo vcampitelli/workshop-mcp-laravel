@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Http\Controllers\Public\OrderController;
-use App\Http\Validation\OrderValidation;
+use App\Http\Validation\OrderListValidation;
 use App\Mcp\Mappers\DatabaseToSchema;
 use App\Mcp\Mappers\ValidationToSchema;
 use App\Models\Order;
@@ -51,7 +51,7 @@ class ListOrders extends Tool
         $mapper = \app(ValidationToSchema::class);
 
         return $mapper->map(
-            (new OrderValidation)->getRules()
+            (new OrderListValidation)->getRules()
         );
     }
 

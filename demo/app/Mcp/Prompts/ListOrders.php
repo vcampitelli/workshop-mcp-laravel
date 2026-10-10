@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Prompts;
 
-use App\Http\Validation\OrderValidation;
+use App\Http\Validation\OrderListValidation;
 use App\Mcp\Mappers\ValidationToArguments;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -44,7 +44,7 @@ class ListOrders extends Prompt
     protected function buildUserMessageFromRequest(Request $request): string
     {
         $validated = $request->validate(
-            (new OrderValidation)->getRules()
+            (new OrderListValidation)->getRules()
         );
 
         $clausules = [];
@@ -81,7 +81,7 @@ class ListOrders extends Prompt
         /** @var ValidationToArguments $mapper */
         $mapper = \app(ValidationToArguments::class);
         return $mapper->map(
-            (new OrderValidation)->getRules()
+            (new OrderListValidation)->getRules()
         );
     }
 }

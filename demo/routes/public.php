@@ -18,4 +18,5 @@ Route::get('product-categories/{category}', [ProductCategoryController::class, '
 Route::get('products/{product}/reviews', [ReviewController::class, 'index']); // List product reviews
 
 // Order Management
-Route::resource('orders', OrderController::class)->only(['index', 'show']); // List all orders
+Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
+Route::resource('orders', OrderController::class);

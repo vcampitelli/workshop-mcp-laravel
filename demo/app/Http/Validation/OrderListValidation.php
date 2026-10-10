@@ -4,7 +4,7 @@ namespace App\Http\Validation;
 
 use App\Rules\TitleAttribute;
 
-class OrderValidation
+class OrderListValidation
 {
     /**
      * Get the validation rules that apply to the request.
