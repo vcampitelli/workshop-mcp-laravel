@@ -1,5 +1,8 @@
 # Laravel E-Commerce Database Structure
 
+Para a autenticação OAuth2 e os scopes da aplicação de demonstração, veja
+[OAuth2 no workshop](docs/oauth.md).
+
 This repository is an example of a complex Laravel database with migrations/models/factories/seeders.
 
 The purpose is for developers to take this example and simulate various e-commerce scenarios, evaluate decisions about DB table relationships, and experiment with various Eloquent/SQL queries.

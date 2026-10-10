@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Passport\Passport;
+use League\OAuth2\Server\ResourceServer;
 
 beforeEach(function () {
     config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
@@ -15,6 +19,74 @@ beforeEach(function () {
         'id' => 1, 'product_category_id' => 1, 'product_status_id' => 1,
         'name' => 'Livro de PHP', 'description' => 'Exemplo', 'price' => 50, 'quantity' => 10,
     ]);
+
+    // The fake Passport token avoids signing JWTs in controller tests.
+    $this->app->instance(ResourceServer::class, Mockery::mock(ResourceServer::class));
+    Passport::actingAs(User::findOrFail(1), array_keys(config('permissions')));
+});
+
+test('protected routes reject requests without a token', function () {
+    Auth::forgetGuards();
+    Auth::shouldUse('api');
+
+    $this->getJson('/orders')->assertUnauthorized();
+    $this->getJson('/products')->assertUnauthorized();
+    $this->getJson('/product-categories')->assertUnauthorized();
+    $this->getJson('/products/1/reviews')->assertUnauthorized();
+});
+
+test('login preserves the intended OAuth destination', function () {
+    User::findOrFail(1)->update(['password' => 'secret']);
+
+    $this->withSession(['url.intended' => '/oauth/authorize?client_id=demo'])
+        ->post('/login', ['email' => 'cliente@example.com', 'password' => 'secret'])
+        ->assertRedirect('/oauth/authorize?client_id=demo');
+    $this->assertAuthenticatedAs(User::findOrFail(1), 'web');
+
+    $this->post('/logout')->assertRedirect('/login');
+    $this->assertGuest('web');
+});
+
+test('login rejects invalid credentials', function () {
+    $this->postJson('/login', ['email' => 'cliente@example.com', 'password' => 'wrong'])
+        ->assertUnprocessable()->assertJsonValidationErrors('email');
+    $this->assertGuest('web');
+});
+
+test('each operation requires its own scope', function (string $method, string $uri, string $scope, array $data, int $status) {
+    DB::table('orders')->insert(['id' => 1, 'user_id' => 1, 'status_id' => 1, 'total_amount' => 50]);
+    $user = User::findOrFail(1);
+
+    Passport::actingAs($user, ['unrelated:scope']);
+    $this->json($method, $uri, $data)->assertForbidden();
+
+    Passport::actingAs($user, [$scope]);
+    $this->json($method, $uri, $data)->assertStatus($status);
+})->with([
+    ['GET', '/orders', 'orders:list', [], 200],
+    ['GET', '/orders/1', 'orders:show', [], 200],
+    ['GET', '/orders/create', 'orders:create', [], 200],
+    ['POST', '/orders', 'orders:create', ['user_id' => 1, 'status_id' => 1, 'total_amount' => 50], 201],
+    ['GET', '/orders/1/edit', 'orders:update', [], 200],
+    ['PATCH', '/orders/1', 'orders:update', ['total_amount' => 25], 200],
+    ['PUT', '/orders/1', 'orders:update', ['total_amount' => 25], 200],
+    ['DELETE', '/orders/1', 'orders:delete', [], 204],
+    ['PATCH', '/orders/1/status', 'orders:update-status', ['status_id' => 2], 200],
+    ['GET', '/products', 'products:list', [], 200],
+    ['GET', '/products/1', 'products:show', [], 200],
+    ['GET', '/product-categories', 'product-categories:list', [], 200],
+    ['GET', '/product-categories/1', 'product-categories:show', [], 200],
+    ['GET', '/products/1/reviews', 'reviews:list', [], 200],
+]);
+
+test('list permission does not allow creating or deleting orders', function () {
+    DB::table('orders')->insert(['id' => 1, 'user_id' => 1, 'status_id' => 1, 'total_amount' => 50]);
+    Passport::actingAs(User::findOrFail(1), ['orders:list']);
+
+    $this->getJson('/orders')->assertOk();
+    $this->postJson('/orders', ['user_id' => 1, 'status_id' => 1, 'total_amount' => 50])->assertForbidden();
+    $this->deleteJson('/orders/1')->assertForbidden();
+    $this->assertDatabaseHas('orders', ['id' => 1, 'deleted_at' => null]);
 });
 
 test('orders can be created, updated and deleted', function () {
