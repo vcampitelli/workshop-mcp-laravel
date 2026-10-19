@@ -6,7 +6,7 @@
   --r-heading-font-weight: 800;
   --r-heading-text-transform: normal;
   --r-heading-letter-spacing: -0.03em;
-  --r-heading1-size: 2em;
+  --r-heading1-size: 1.8em;
   --r-heading2-size: 1.5em;
   --r-heading3-size: 1.2em;
   --r-heading4-size: 1em;
@@ -42,6 +42,10 @@
 .reveal .slides {
   text-align: left;
   letter-spacing: var(--main-letter-spacing);
+}
+.reveal .slide-number {
+  left: 8px;
+  right: auto;
 }
 
 /* Primeiro slide */
@@ -402,12 +406,12 @@ img {
 }
 .reveal #slide-comparacoes .architecture-comparison thead th {
   background: #242217;
-  border-top: 3px solid var(--code-inline-color);
+  border-bottom: 3px solid var(--code-inline-color);
   border-radius: 8px 8px 0 0;
 }
 .reveal #slide-comparacoes .architecture-comparison thead th:last-child {
   background: #1d2130;
-  border-top-color: #a5b4fc;
+  border-bottom-color: #a5b4fc;
 }
 .reveal #slide-comparacoes .architecture-comparison tbody td {
   background: rgb(var(--gray-900));
