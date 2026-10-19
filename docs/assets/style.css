@@ -1,6 +1,7 @@
 :root {
   --r-background-color: rgb(var(--background-dark));
-  --r-code-font: "JetBrains Mono", "JetBrains Mono Fallback", SF Mono, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --r-code-font:
+    "JetBrains Mono", "JetBrains Mono Fallback", SF Mono, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --r-heading-font: var(--r-main-font);
   --r-heading-font-weight: 800;
   --r-heading-text-transform: normal;
@@ -96,7 +97,9 @@ code:not(.hljs) {
 .hljs.language-shell > span.hljs-meta.prompt_:first-child {
   user-select: none;
 }
-.hljs-meta .hljs-string, .hljs-regexp, .hljs-string {
+.hljs-meta .hljs-string,
+.hljs-regexp,
+.hljs-string {
   color: #ce9178;
 }
 pre.code-wrapper > kbd {
@@ -105,14 +108,14 @@ pre.code-wrapper > kbd {
   border: 1px rgb(var(--gray-800)) solid;
   border-bottom: none;
   background-color: rgb(var(--gray-900));
-  padding: 3px 6px 0 6px;
+  padding: 5px 10px 0 10px;
   letter-spacing: -0.04em;
-  font-size: 0.8em;
+  font-size: 0.75em;
   color: rgb(var(--gray-400));
 }
 pre.code-wrapper > kbd + .hljs {
   border-top-left-radius: 0;
-  margin-top: -3px;
+  margin-top: -4px;
 }
 
 /* Tipografia */
@@ -122,7 +125,8 @@ h1:not(.title, :last-child) {
   --r-heading1-size: 1em;
   opacity: 0.5;
 }
-.reveal i:not(.ti), .reveal em {
+.reveal i:not(.ti),
+.reveal em {
   font-style: italic;
 }
 .text-muted {
@@ -142,7 +146,8 @@ h1:not(.title, :last-child) {
   display: block;
 }
 h1 > .ti,
-h2 > .ti {
+h2 > .ti,
+h3 > .ti {
   display: inline-block;
   margin-left: -1.15em;
   color: var(--code-inline-color);
@@ -183,8 +188,14 @@ a.reference:is(:hover, :focus) {
   display: flex;
   column-gap: 20px;
 }
+.mt-2 {
+  margin-top: 20px !important;
+}
 .mb-0 {
   margin-bottom: 0 !important;
+}
+.mb-0 + p {
+  margin-top: 0 !important;
 }
 
 /* Imagens */
@@ -288,11 +299,24 @@ img {
 .reveal .mcp-columns:has(pre) {
   grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
 }
-.reveal .mcp-columns > div { min-width: 0; }
-.reveal .mcp-columns h3 { color: var(--code-inline-color); font-size: 1em; }
-.reveal .mcp-columns p, .reveal .mcp-points { font-size: 0.85em; }
-.reveal .mcp-points li + li { margin-top: 0.5em; }
-.reveal .mcp-columns pre { margin: 0; font-size: 0.52em; }
+.reveal .mcp-columns > div {
+  min-width: 0;
+}
+.reveal .mcp-columns h3 {
+  color: var(--code-inline-color);
+  font-size: 1em;
+}
+.reveal .mcp-columns p,
+.reveal .mcp-points {
+  font-size: 0.85em;
+}
+.reveal .mcp-points li + li {
+  margin-top: 0.5em;
+}
+.reveal .mcp-columns pre {
+  margin-top: 0 !important;
+  font-size: 0.52em;
+}
 .reveal .mcp-flow {
   display: flex;
   align-items: center;
@@ -306,14 +330,35 @@ img {
   padding: 22px 12px;
   text-align: center;
 }
-.reveal .mcp-step > .ti { display: block; font-size: 1.5em; color: var(--code-inline-color); margin-bottom: 12px; }
-.reveal .mcp-step b { display: block; font-size: 0.85em; }
-.reveal .mcp-step span { display: block; font-size: 0.65em; color: rgb(var(--gray-300)); margin-top: 8px; }
-.reveal .mcp-arrow { color: var(--code-inline-color); }
-.reveal #apps-blade pre { font-size: 0.52em; }
+.reveal .mcp-step > .ti {
+  display: block;
+  font-size: 1.5em;
+  color: var(--code-inline-color);
+  margin-bottom: 12px;
+}
+.reveal .mcp-step b {
+  display: block;
+  font-size: 0.85em;
+}
+.reveal .mcp-step span {
+  display: block;
+  font-size: 0.65em;
+  color: rgb(var(--gray-300));
+  margin-top: 8px;
+}
+.reveal .mcp-arrow {
+  color: var(--code-inline-color);
+}
+.reveal #apps-blade pre {
+  font-size: 0.52em;
+}
 @media (max-width: 600px) {
-  .reveal .mcp-columns { gap: 24px; }
-  .reveal .mcp-flow { gap: 8px; }
+  .reveal .mcp-columns {
+    gap: 24px;
+  }
+  .reveal .mcp-flow {
+    gap: 8px;
+  }
 }
 .reveal :is(#schemas, #autenticacao, #streaming, #apps, #testes) {
   --r-block-margin: 24px;
@@ -321,5 +366,9 @@ img {
 .reveal :is(#schemas, #autenticacao, #streaming, #apps, #testes) pre {
   margin-block: 24px;
 }
-.reveal .mcp-flow { margin-block: 24px; }
-.reveal .mcp-step { padding-block: 16px; }
+.reveal .mcp-flow {
+  margin-block: 24px;
+}
+.reveal .mcp-step {
+  padding-block: 16px;
+}
