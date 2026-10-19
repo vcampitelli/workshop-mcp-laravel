@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1303.5" height="600" viewBox="47.25 0 1303.5 600" role="img" aria-labelledby="architecture-title architecture-desc">
+  <title id="architecture-title">Arquitetura MCP</title>
+  <desc id="architecture-desc">Da esquerda para a direita: Claude, Codex e VS Code em um host MCP, com três clientes conectados pelo protocolo MCP a servidores MCP que acessam Filesystem, Slack e MySQL. Os seis fragmentos apresentam os agentes, o host, os sistemas, os servidores, o protocolo e os clientes, nessa ordem.</desc>
+  <defs>
+    <marker id="architecture-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+      <path d="M 2 1 L 8 5 L 2 9" fill="none" stroke="#9387ff" stroke-width="1.7"/>
+    </marker>
+  </defs>
+  <g font-family="Geist, Arial, Helvetica, sans-serif" fill="#22242d" text-anchor="middle">
+    <g class="fragment" data-fragment-index="0" id="architecture-agents">
+      <rect x="48" y="65" width="405" height="470" rx="32" fill="#fff" stroke="#dedede" stroke-width="1.5"/>
+      <g transform="translate(0 55)" fill="none" stroke="#4c5bea" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="95" y="220" width="58" height="40" rx="5"/>
+        <path d="M 124 260 V 273 M 110 273 H 138"/>
+      </g>
+      <text x="265" y="300" font-size="25" font-weight="500">
+        <tspan x="265">Claude</tspan><tspan x="265" dy="39">Codex</tspan><tspan x="265" dy="39">VS Code</tspan>
+      </text>
+    </g>
+    <g class="fragment" data-fragment-index="5" id="architecture-host">
+      <text x="265" y="245" font-size="29" font-weight="650">Host MCP</text>
+    </g>
+    <g class="fragment" data-fragment-index="2" id="architecture-systems">
+      <rect x="1130" y="102" width="220" height="96" rx="24" fill="#fff" stroke="#dedede" stroke-width="1.5"/>
+      <path d="M 1155 141 h 13 l 5 6 h 19 v 25 h -37 Z" fill="#e9ecf3" stroke="#606571" stroke-width="2" stroke-linejoin="round"/>
+      <text x="1260" y="158" font-size="23" font-weight="500">Filesystem</text>
+      <rect x="1130" y="252" width="220" height="96" rx="24" fill="#fff" stroke="#dedede" stroke-width="1.5"/>
+      <g fill="#e9ecf3" stroke="#606571" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M 1155 285 h 36 v 25 h -22 l -10 8 v -8 h -4 Z"/>
+        <path d="M 1164 294 h 18 M 1164 301 h 12" fill="none"/>
+      </g>
+      <text x="1260" y="308" font-size="23" font-weight="500">Slack</text>
+      <rect x="1130" y="402" width="220" height="96" rx="24" fill="#fff" stroke="#dedede" stroke-width="1.5"/>
+      <g fill="#e9ecf3" stroke="#606571" stroke-width="2">
+        <path d="M 1155 437 v 27 c 0 11 36 11 36 0 v -27 Z"/>
+        <ellipse cx="1173" cy="437" rx="18" ry="7"/>
+        <path d="M 1155 450 c 0 11 36 11 36 0" fill="none"/>
+      </g>
+      <text x="1260" y="458" font-size="23" font-weight="500">MySQL</text>
+    </g>
+    <g class="fragment" data-fragment-index="3" id="architecture-servers">
+      <path d="M 1050 150 H 1125" fill="none" stroke="#9387ff" stroke-width="2" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
+      <rect x="825" y="102" width="225" height="96" rx="24" fill="#fff" stroke="#dedede" stroke-width="1.5"/>
+      <rect x="843" y="131" width="38" height="38" rx="9" fill="#e9ecf3"/>
+      <path d="M 862 138 l 9 3 v 10 q 0 8 -9 12 q -9 -4 -9 -12 v -10 Z" fill="none" stroke="#22242d" stroke-width="1.8"/>
+      <text x="962" y="157" font-size="22" font-weight="600">Servidor MCP</text>
+      <path d="M 1050 300 H 1125" fill="none" stroke="#9387ff" stroke-width="2" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
+      <rect x="825" y="252" width="225" height="96" rx="24" fill="#fff" stroke="#dedede" stroke-width="1.5"/>
+      <rect x="843" y="281" width="38" height="38" rx="9" fill="#e9ecf3"/>
+      <path d="M 862 288 l 9 3 v 10 q 0 8 -9 12 q -9 -4 -9 -12 v -10 Z" fill="none" stroke="#22242d" stroke-width="1.8"/>
+      <text x="962" y="307" font-size="22" font-weight="600">Servidor MCP</text>
+      <path d="M 1050 450 H 1125" fill="none" stroke="#9387ff" stroke-width="2" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
+      <rect x="825" y="402" width="225" height="96" rx="24" fill="#fff" stroke="#dedede" stroke-width="1.5"/>
+      <rect x="843" y="431" width="38" height="38" rx="9" fill="#e9ecf3"/>
+      <path d="M 862 438 l 9 3 v 10 q 0 8 -9 12 q -9 -4 -9 -12 v -10 Z" fill="none" stroke="#22242d" stroke-width="1.8"/>
+      <text x="962" y="457" font-size="22" font-weight="600">Servidor MCP</text>
+    </g>
+    <g class="fragment" data-fragment-index="4" id="architecture-protocols">
+      <path d="M 553 150 H 820" fill="none" stroke="#9387ff" stroke-width="2" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
+      <rect x="590" y="128" width="193" height="44" rx="21" fill="#fff" stroke="#9387ff"/>
+      <text x="686.5" y="157" fill="#7963ff" font-size="20" font-weight="600">Protocolo MCP</text>
+      <path d="M 553 300 H 820" fill="none" stroke="#9387ff" stroke-width="2" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
+      <rect x="590" y="278" width="193" height="44" rx="21" fill="#fff" stroke="#9387ff"/>
+      <text x="686.5" y="307" fill="#7963ff" font-size="20" font-weight="600">Protocolo MCP</text>
+      <path d="M 553 450 H 820" fill="none" stroke="#9387ff" stroke-width="2" marker-start="url(#architecture-arrow)" marker-end="url(#architecture-arrow)"/>
+      <rect x="590" y="428" width="193" height="44" rx="21" fill="#fff" stroke="#9387ff"/>
+      <text x="686.5" y="457" fill="#7963ff" font-size="20" font-weight="600">Protocolo MCP</text>
+    </g>
+    <g class="fragment" data-fragment-index="6" id="architecture-clients">
+      <rect x="373" y="118" width="180" height="64" rx="32" fill="#f4f1ff" stroke="#bbb1ff" stroke-width="1.5"/>
+      <text x="463" y="158" font-size="23" font-weight="500">Cliente MCP</text>
+      <rect x="373" y="268" width="180" height="64" rx="32" fill="#f4f1ff" stroke="#bbb1ff" stroke-width="1.5"/>
+      <text x="463" y="308" font-size="23" font-weight="500">Cliente MCP</text>
+      <rect x="373" y="418" width="180" height="64" rx="32" fill="#f4f1ff" stroke="#bbb1ff" stroke-width="1.5"/>
+      <text x="463" y="458" font-size="23" font-weight="500">Cliente MCP</text>
+    </g>
+  </g>
+</svg>

@@ -188,6 +188,9 @@ a.reference:is(:hover, :focus) {
   display: flex;
   column-gap: 20px;
 }
+.d-flex.cols-2 > div {
+  flex: 1 1 50%;
+}
 .mt-2 {
   margin-top: 20px !important;
 }
@@ -371,4 +374,69 @@ img {
 }
 .reveal .mcp-step {
   padding-block: 16px;
+}
+
+/* Comparação das arquiteturas */
+.reveal #slide-comparacoes .architecture-comparison {
+  width: 100%;
+  margin-top: 24px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 8px 0;
+  font-size: 0.65em;
+  line-height: 1.3;
+}
+.reveal #slide-comparacoes .architecture-comparison th,
+.reveal #slide-comparacoes .architecture-comparison td {
+  padding: 16px 20px;
+  vertical-align: middle;
+  border-bottom: 1px solid rgb(var(--gray-800));
+}
+.reveal #slide-comparacoes .architecture-comparison thead td,
+.reveal #slide-comparacoes .architecture-comparison tbody th {
+  width: 19%;
+  padding-left: 0;
+  color: rgb(var(--gray-400));
+  font-size: 0.9em;
+  font-weight: 500;
+}
+.reveal #slide-comparacoes .architecture-comparison thead th {
+  background: #242217;
+  border-top: 3px solid var(--code-inline-color);
+  border-radius: 8px 8px 0 0;
+}
+.reveal #slide-comparacoes .architecture-comparison thead th:last-child {
+  background: #1d2130;
+  border-top-color: #a5b4fc;
+}
+.reveal #slide-comparacoes .architecture-comparison tbody td {
+  background: rgb(var(--gray-900));
+}
+.reveal #slide-comparacoes .architecture-comparison tbody tr:last-child td {
+  border-radius: 0 0 8px 8px;
+}
+.reveal #slide-comparacoes .comparison-name {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--code-inline-color);
+  font-size: 1.35em;
+  font-weight: 700;
+}
+.reveal #slide-comparacoes th:last-child .comparison-name {
+  color: #a5b4fc;
+}
+.reveal #slide-comparacoes .comparison-flow {
+  font-weight: 500;
+}
+.reveal #slide-comparacoes .architecture-comparison strong {
+  display: block;
+  font-weight: 600;
+}
+.reveal #slide-comparacoes .architecture-comparison td > span,
+.reveal #slide-comparacoes .comparison-flow > span {
+  display: block;
+  margin-top: 5px;
+  color: rgb(var(--gray-400));
+  font-size: 0.85em;
+  font-weight: 400;
 }

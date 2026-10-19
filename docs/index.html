@@ -176,7 +176,7 @@
                     </section>
                     <section data-auto-animate>
                         <h1 class="title"><i class="ti ti-map"></i> Arquitetura</h1>
-                        <img src="assets/mcp-architecture.png" alt="Arquitetura" class="r-stretch mb-0">
+                        <img src="assets/mcp-arquitetura.svg" alt="Arquitetura MCP" class="insert-svg w-100">
                         <a
                             href="https://auth0.com/blog/an-introduction-to-mcp-and-authorization/"
                             target="_blank"
@@ -566,18 +566,18 @@
                         <div class="mcp-columns">
                             <div>
                                 <h3><i class="ti ti-key"></i> Sanctum</h3>
-                                <p>Bearer token configurado no cliente.</p>
-                                <p class="text-muted">Exemplo: integração interna da loja.</p>
+                                <p>Bearer token configurado no cliente</p>
+                                <p class="text-muted">Exemplo: integração interna da loja</p>
                             </div>
                             <div>
                                 <h3><i class="ti ti-shield-lock"></i> Passport</h3>
-                                <p>OAuth 2.1 com autorização do usuário.</p>
-                                <p class="text-muted">Exemplo: conectar a loja a um agente externo.</p>
+                                <p>OAuth 2.1 com autorização do usuário</p>
+                                <p class="text-muted">Exemplo: conectar a loja a um agente externo</p>
                             </div>
                         </div>
                         <div class="alert d-flex">
                             <i class="ti ti-info-circle" aria-hidden="true"></i>
-                            <p>Confira o mecanismo aceito pelo cliente MCP antes de escolher.</p>
+                            <p>Confira o mecanismo aceito pelo cliente MCP antes de escolher</p>
                         </div>
                         <a
                             href="https://laravel.com/framework/docs/mcp#authentication"
@@ -600,7 +600,7 @@
                         <pre><code class="http" data-trim>Authorization: Bearer &lt;token&gt;</code></pre>
                         <div class="alert d-flex">
                             <i class="ti ti-info-circle" aria-hidden="true"></i>
-                            <p>O token identifica o usuário em cada requisição.</p>
+                            <p>O token identifica o usuário em cada requisição</p>
                         </div>
                         <a
                             href="https://laravel.com/framework/docs/mcp#sanctum"
@@ -645,8 +645,7 @@
                         >
                     </section>
                     <section>
-                        <h1>Autenticação</h1>
-                        <h2><i class="ti ti-id-badge-2"></i> Permissão para executar</h2>
+                        <h1 class="title"><i class="ti ti-id-badge-2"></i> Autorização</h1>
                         <pre><code class="php" data-trim>// Dentro de handle(Request $request)
 if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
     return Response::error(&#x27;Sem permissão para listar pedidos.&#x27;);
@@ -719,7 +718,7 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                         <h1 class="title"><i class="ti ti-broadcast"></i> Streaming de respostas</h1>
                         <div class="mcp-columns">
                             <div>
-                                <h3><i class="ti ti-code"></i> Na tool:</h3>
+                                <h3><i class="ti ti-code"></i> Na Tool:</h3>
                                 <ul class="mcp-points">
                                     <li><code>handle(): \Generator</code></li>
                                     <li><code>yield</code> emite mensagens</li>
@@ -737,7 +736,7 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                         </div>
                         <div class="alert d-flex">
                             <i class="ti ti-info-circle" aria-hidden="true"></i>
-                            <p>Use para operações demoradas, como consolidar milhares de pedidos.</p>
+                            <p>Use para operações demoradas, como consolidar milhares de pedidos</p>
                         </div>
                         <a
                             href="https://laravel.com/framework/docs/mcp#streaming-responses"
@@ -757,7 +756,7 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                     </section>
                     <section data-auto-animate>
                         <h1 class="title"><i class="ti ti-apps"></i> Apps</h1>
-                        <p>Usados para criar interfaces dentro do host.</p>
+                        <p>Usados para criar interfaces dentro do Host</p>
                         <div class="mcp-flow">
                             <div class="mcp-step">
                                 <i class="ti ti-tool" aria-hidden="true"></i><b>Tool</b
@@ -774,10 +773,9 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                                 ><span>Renderiza em iframe</span>
                             </div>
                         </div>
-                        <p>Exemplo: um painel de pedidos com filtros e tabela no chat.</p>
                         <div class="alert d-flex">
                             <i class="ti ti-info-circle" aria-hidden="true"></i>
-                            <p>O host precisa oferecer suporte a MCP Apps.</p>
+                            <p>Exemplo: um painel de pedidos com filtros e tabela no chat</p>
                         </div>
                         <a
                             href="https://laravel.com/framework/docs/mcp#apps"
@@ -875,8 +873,8 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                         >
                     </section>
                     <section id="apps-blade">
-                        <h1>Apps</h1>
-                        <h2>Chamando uma tool pela interface</h2>
+                        <h1 class="title"><i class="ti ti-apps"></i> Apps</h1>
+                        <p>É possível chamar uma Tool pela interface:</p>
                         <pre><kbd>resources/views/mcp/orders-dashboard-app.blade.php</kbd><code class="html" data-trim>&lt;x-mcp::app title=&quot;Pedidos&quot;&gt;
     &lt;x-slot:head&gt;
         &lt;script type=&quot;module&quot;&gt;
@@ -951,7 +949,11 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                     </section>
                     <section id="testes-cenarios">
                         <h1>Testes</h1>
-                        <h2>Cenários de acesso e erro</h2>
+                        <h2><i class="ti ti-square-rounded-check"></i> Cenários de acesso e erro</h2>
+                        <ul class="mcp-points">
+                            <li>Verifique argumentos inválidos e acesso negado</li>
+                            <li>Confira o isolamento dos dados por usuário</li>
+                        </ul>
                         <pre><code class="php" data-trim>
                             // Chamada autenticada:
                             OrdersServer::actingAs($user)
@@ -962,13 +964,9 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                             OrdersServer::tool(FindStatusId::class, [&#x27;name&#x27; =&gt; &#x27;inexistente&#x27;])
                                 -&gt;assertHasErrors([&#x27;Status não encontrado.&#x27;]);
                         </code></pre>
-                        <ul class="mcp-points">
-                            <li>Verifique argumentos inválidos e acesso negado</li>
-                            <li>Confira o isolamento dos dados por usuário</li>
-                        </ul>
                         <div class="alert d-flex">
                             <i class="ti ti-info-circle" aria-hidden="true"></i>
-                            <p>Teste o middleware via HTTP: <code>actingAs()</code> na tool não verifica OAuth.</p>
+                            <p>Teste o middleware via HTTP: <code>actingAs()</code> na tool não verifica OAuth</p>
                         </div>
                         <a
                             href="https://laravel.com/framework/docs/mcp#unit-tests"
@@ -981,14 +979,77 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                 </section>
                 <!-- Testes -->
 
+                <!-- Abordagens -->
                 <section>
-                    <h1>Abordagens</h1>
-                    Proxy vs mesmo servidor
+                    <section>
+                        <h1><i class="ti ti-route-alt-left"></i> Abordagens</h1>
+                    </section>
+                    <section>
+                        <h1>Abordagens</h1>
+                        <h2>Mesmo Servidor</h2>
+                        <p>
+                            Instale o <code>laravel/mcp</code> diretamente em sua API, e faça as Tools chamarem diretamente
+                            <i>Controllers</i> e/ou <i>Services</i>
+                        </p>
+                    </section>
+                    <section>
+                        <h1>Abordagens</h1>
+                        <h2>Proxy</h2>
+                        <p>
+                            Crie um novo serviço para seu servidor MCP, e faça as Tools invocarem sua API via HTTP
+                        </p>
+                    </section>
+                    <section id="slide-comparacoes">
+                        <h1>Abordagens</h1>
+                        <h2>Comparações</h2>
+                        <table class="architecture-comparison">
+                            <thead>
+                                <tr>
+                                    <td></td>
+                                    <th scope="col">
+                                        <span class="comparison-name">Mesma aplicação</span>
+                                        <span class="comparison-flow">MCP + API <span>na mesma aplicação</span></span>
+                                    </th>
+                                    <th scope="col">
+                                        <span class="comparison-name">Proxy</span>
+                                        <span class="comparison-flow">MCP → HTTP → API <span>em serviços separados</span></span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th scope="row">Deploy</th>
+                                    <td><strong>Juntos</strong><span>Código e releases acoplados</span></td>
+                                    <td><strong>Independentes</strong><span>Integração pelo contrato da API</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Compatibilidade</th>
+                                    <td><strong>Requer aplicação atualizada</strong><span>PHP 8.2+ e Laravel 11+</span></td>
+                                    <td><strong>Preserva a API</strong><span>Mantém as versões atuais</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Escala</th>
+                                    <td><strong>Recursos compartilhados</strong><span>MCP e API escalam juntos</span></td>
+                                    <td><strong>Recursos separados</strong><span>Cada serviço escala conforme a demanda</span></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Cuidados</th>
+                                    <td><strong>Separação de responsabilidades</strong><span>Evitar misturar MCP e regras de negócio</span></td>
+                                    <td><strong>Comunicação pela rede</strong><span>Timeouts, retentativas e falhas HTTP</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
                 </section>
+                <!-- Abordagens -->
 
+                <!-- Caching -->
                 <section>
-                    <h1>Caching</h1>
+                    <section>
+                        <h1><i class="ti ti-server-bolt"></i> Caching</h1>
+                    </section>
                 </section>
+                <!-- Caching -->
 
                 <!-- Referências -->
                 <section>
@@ -1114,6 +1175,10 @@ if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
                             );
                         }
                         $wrapper.innerHTML = contents.replace('<?xml version="1.0" encoding="UTF-8"?>', "");
+                        if ($img.classList.contains('w-100')) {
+                            $wrapper.firstElementChild.style.width = '100%';
+                            $wrapper.firstElementChild.removeAttribute('height');
+                        }
                         $img.parentNode.replaceChild($wrapper, $img);
                     });
                 });
