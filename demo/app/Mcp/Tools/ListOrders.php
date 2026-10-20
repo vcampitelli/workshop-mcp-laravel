@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
-use App\Http\Controllers\Public\OrderController;
+use App\Domains\Order\ListOrders\ListOrdersUseCase;
+use App\Domains\Order\ListOrders\ListOrdersUseCaseInput;
 use App\Http\Validation\OrderListValidation;
 use App\Mcp\Mappers\DatabaseToSchema;
 use App\Mcp\Mappers\ValidationToSchema;
 use App\Models\Order;
+use App\Models\OrderStatus;
+use App\Models\User;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Http\Request as HttpRequest;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
@@ -28,16 +31,20 @@ class ListOrders extends Tool
     /**
      * Handle the tool request.
      */
-    public function handle(Request $request, OrderController $controller): ResponseFactory
+    public function handle(Request $request, ListOrdersUseCase $useCase): ResponseFactory
     {
-        $httpRequest = HttpRequest::create(
-            uri: '/admin/orders',
-            parameters: $request->toArray()
-        );
+        /** @var array{status_id?: int|string, user_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string} $filters */
+        $filters = $request->validate((new OrderListValidation)->getRules());
+        $output = $useCase(new ListOrdersUseCaseInput(
+            statusId: isset($filters['status_id']) ? (int) $filters['status_id'] : null,
+            userId: isset($filters['user_id']) ? (int) $filters['user_id'] : null,
+            after: $filters['after'] ?? null,
+            before: $filters['before'] ?? null,
+            amountLt: isset($filters['amount_lt']) ? (float) $filters['amount_lt'] : null,
+            amountGt: isset($filters['amount_gt']) ? (float) $filters['amount_gt'] : null,
+        ));
 
-        $response = $controller->index($httpRequest);
-
-        return Response::structured(['orders' => $response->toArray()]);
+        return Response::structured(['orders' => $output->orders->toArray()]);
     }
 
     public function __construct(private ValidationToSchema $mapper) {}
@@ -45,12 +52,10 @@ class ListOrders extends Tool
     /**
      * Get the tool's input schema.
      *
-     * @return array<string, \Illuminate\Contracts\JsonSchema\JsonSchema>
+     * @return array<string, Type>
      */
     public function schema(JsonSchema $schema): array
     {
-        /** @var ValidationToSchema $mapper */
-        // $mapper = \app(ValidationToSchema::class);
 
         return $this->mapper->map(
             (new OrderListValidation)->getRules()
@@ -66,11 +71,12 @@ class ListOrders extends Tool
     {
         /** @var DatabaseToSchema $mapper */
         $mapper = \app(DatabaseToSchema::class);
+
         return [
             'orders' => $schema->array()->items(
-                $mapper->mapModel(new Order(), [
-                    'status' => new \App\Models\OrderStatus(),
-                    'user' => new \App\Models\User(),
+                $mapper->mapModel(new Order, [
+                    'status' => new OrderStatus,
+                    'user' => new User,
                 ]),
             ),
         ];

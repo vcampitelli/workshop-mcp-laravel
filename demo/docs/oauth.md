@@ -37,7 +37,7 @@ No Postman ou outro cliente OAuth2, selecione **Authorization Code com PKCE**:
 - Client Secret: vazio para esse cliente público
 - Callback URL: a mesma URL cadastrada no cliente
 - Code Challenge Method: `S256`
-- Scope: `orders:list orders:show products:list reviews:list`
+- Scope: `orders:list orders:show`
 
 O cliente deve gerar e validar `state`, gerar um `code_verifier` e enviar seu
 `code_challenge` S256 na autorização. Após login e consentimento, ele recebe
@@ -53,7 +53,8 @@ curl http://localhost:8000/orders \
   -H "Authorization: Bearer SEU_ACCESS_TOKEN"
 ```
 
-Sem token válido, a resposta é 401. Sem o scope exigido, é 403.
+Nas rotas de pedidos, sem token válido a resposta é 401; sem o scope exigido, é 403.
+As consultas de produtos, categorias e avaliações são públicas e não exigem token nem scopes.
 As rotas da aplicação conservam suas URLs e usam o grupo de middleware de API,
 sem sessão ou CSRF. Login e consentimento usam sessão e CSRF.
 
@@ -62,9 +63,6 @@ sem sessão ou CSRF. Login e consentimento usam sessão e CSRF.
 | Entidade | Scopes |
 | --- | --- |
 | Pedidos | `orders:list`, `orders:show`, `orders:create`, `orders:update`, `orders:delete`, `orders:update-status` |
-| Produtos | `products:list`, `products:show` |
-| Categorias | `product-categories:list`, `product-categories:show` |
-| Avaliações | `reviews:list` |
 
 `GET /orders/create` exige `orders:create`; `GET /orders/{order}/edit` exige
 `orders:update`. Alterar o status exige exclusivamente `orders:update-status`.
@@ -98,13 +96,13 @@ docker compose exec api php artisan oauth:demo
 O comando cria ou reutiliza o cliente público **Assistente de Compras (demo)** e
 imprime um link assinado, de uso único, válido por dez minutos. Abra esse link
 no navegador. O fluxo passa pelo login existente e pelo consentimento real do
-Passport, solicitando `products:list` e `orders:list`. O parâmetro
+Passport, solicitando `orders:list` e `orders:show`. O parâmetro
 `prompt=consent` mantém a tela de consentimento visível em novas demonstrações.
 
 Para escolher outras permissões, repita a opção `--scope`:
 
 ```sh
-php artisan oauth:demo --scope=products:list --scope=reviews:list
+php artisan oauth:demo --scope=orders:list --scope=orders:show
 ```
 
 O início do fluxo guarda `state` e o verificador PKCE na sessão do navegador.
@@ -118,3 +116,18 @@ O comando e as rotas da demonstração estão disponíveis somente nos ambientes
 `local` e `testing`. As chaves e migrations do Passport devem ter sido preparadas
 conforme a seção Preparação. Execute o comando no mesmo ambiente/container da
 aplicação, com o mesmo banco, cache e `APP_URL`.
+
+
+## Organização das ações
+
+Cada ação está em `app/Domains/<Domínio>/<Ação>/`, com o use case e seu
+`Output`. Ações com três ou mais parâmetros usam um `Input` tipado. O método
+`__invoke` recebe apenas os dados necessários; não recebe requests, sessões ou
+respostas HTTP. Outputs de erro usam códigos de domínio, convertidos em
+respostas HTTP pelas controllers.
+
+As controllers validam e convertem os parâmetros e formatam a resposta. A
+ferramenta MCP de pedidos chama `ListOrdersUseCase` diretamente, usando o mesmo
+filtro da API. As sessões e os redirecionamentos de login/OAuth continuam nos
+adaptadores HTTP; a troca de tokens do Passport usa o contrato `TokenIssuer`
+e sua implementação em `app/Infrastructure/OAuth`.

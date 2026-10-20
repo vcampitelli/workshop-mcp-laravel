@@ -3,9 +3,11 @@
 namespace App\Http\Validation;
 
 use App\Rules\TitleAttribute;
+use Illuminate\Contracts\Validation\ValidationRule;
 
 class OrderStoreValidation
 {
+    /** @return array<string, list<string|ValidationRule>> */
     public function getRules(): array
     {
         return [

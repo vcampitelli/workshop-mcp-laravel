@@ -24,8 +24,12 @@ class StartOAuthDemo extends Command
             return self::FAILURE;
         }
 
-        $scopes = $this->option('scope') ?: ['products:list', 'orders:list'];
-        $invalid = array_diff($scopes, array_keys(config('permissions')));
+        /** @var list<string> $requestedScopes */
+        $requestedScopes = $this->option('scope');
+        /** @var array<string, string> $permissions */
+        $permissions = config('permissions');
+        $scopes = $requestedScopes ?: ['orders:list', 'orders:show'];
+        $invalid = array_diff($scopes, array_keys($permissions));
 
         if ($invalid) {
             $this->error('Permissões desconhecidas: '.implode(', ', $invalid));
@@ -54,7 +58,7 @@ class StartOAuthDemo extends Command
             ->get()
             ->first(fn ($client) => ! $client->confidential()
                 && $client->hasGrantType('authorization_code')
-                && $client->redirect_uris === [$callback]);
+                && $client->getAttribute('redirect_uris') === [$callback]);
 
         $client ??= $clients->createAuthorizationCodeGrantClient(
             'Assistente de Compras (demo)', [$callback], confidential: false,

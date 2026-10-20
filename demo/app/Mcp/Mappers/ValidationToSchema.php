@@ -6,6 +6,7 @@ namespace App\Mcp\Mappers;
 
 use App\Rules\TitleAttribute;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types;
 
@@ -15,10 +16,11 @@ class ValidationToSchema
 
     public function __construct()
     {
-        $this->schema = new JsonSchemaTypeFactory();
+        $this->schema = new JsonSchemaTypeFactory;
     }
 
     /**
+     * @param  array<string, ValidationRule|list<mixed>|string>  $rules
      * @return array<string, Types\Type>
      */
     public function map(array $rules): array
@@ -31,7 +33,7 @@ class ValidationToSchema
             }
 
             // @TODO checar outros tipos de validação por classe
-            if (!\is_array($rule)) {
+            if (! \is_array($rule)) {
                 continue;
             }
 
@@ -41,11 +43,12 @@ class ValidationToSchema
         return $schema;
     }
 
+    /** @param list<mixed> $rules */
     protected function mapRulesToType(array $rules): Types\Type
     {
         $type = null;
         foreach ($rules as $rule) {
-            if (!\is_string($rule)) {
+            if (! \is_string($rule)) {
                 continue;
             }
 
@@ -66,10 +69,11 @@ class ValidationToSchema
         foreach ($rules as $rule) {
             if ($rule instanceof TitleAttribute) {
                 $type->description($rule->title);
+
                 continue;
             }
 
-            if ($rule === 'date') {
+            if ($rule === 'date' && $type instanceof Types\StringType) {
                 $type->format('date-time');
             }
 
@@ -80,5 +84,4 @@ class ValidationToSchema
 
         return $type;
     }
-
 }

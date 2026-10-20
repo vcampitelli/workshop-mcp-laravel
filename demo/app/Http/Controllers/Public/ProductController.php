@@ -1,43 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Public;
 
+use App\Domains\Product\ListProducts\ListProductsUseCase;
+use App\Domains\Product\ListProducts\ListProductsUseCaseInput;
+use App\Domains\Product\ViewProduct\ViewProductUseCase;
+use App\Domains\Shared\UseCaseError;
 use App\Http\Controllers\Controller;
 use App\Http\Validation\ProductListValidation;
 use App\Models\Product;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class ProductController extends Controller
 {
-    public function index(Request $request): Collection
+    public function index(Request $request, ListProductsUseCase $useCase): JsonResponse
     {
-        $filters = $request->validate((new ProductListValidation)->getRules());
-        $query = Product::query();
+        $request->validate((new ProductListValidation)->getRules());
+        $output = $useCase(new ListProductsUseCaseInput(
+            name: $request->has('name') ? $request->string('name')->toString() : null,
+            categoryId: $request->has('product_category_id') ? $request->integer('product_category_id') : null,
+            statusId: $request->has('product_status_id') ? $request->integer('product_status_id') : null,
+            priceLt: $request->has('price_lt') ? $request->float('price_lt') : null,
+            priceGt: $request->has('price_gt') ? $request->float('price_gt') : null,
+        ));
 
-        if (isset($filters['name'])) {
-            $query->where('name', 'like', '%'.$filters['name'].'%');
-        }
-
-        foreach (['product_category_id', 'product_status_id'] as $field) {
-            if (isset($filters[$field])) {
-                $query->where($field, $filters[$field]);
-            }
-        }
-
-        if (isset($filters['price_lt'])) {
-            $query->where('price', '<=', $filters['price_lt']);
-        }
-
-        if (isset($filters['price_gt'])) {
-            $query->where('price', '>=', $filters['price_gt']);
-        }
-
-        return $query->with('category')->get();
+        return response()->json($output->products);
     }
 
-    public function show(Product $product): Product
+    public function show(Product $product, ViewProductUseCase $useCase): JsonResponse
     {
-        return $product->load(['category', 'productVariants.productAttribute']);
+        $output = $useCase($product->id);
+        if ($output->error !== null) {
+            abort($output->error === UseCaseError::NotFound ? 404 : 422);
+        }
+
+        return response()->json($output->product);
     }
 }

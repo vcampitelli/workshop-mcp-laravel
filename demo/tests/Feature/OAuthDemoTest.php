@@ -75,7 +75,7 @@ test('demo completes a real passport authorization and issues a usable token', f
     parse_str(parse_url($authorize, PHP_URL_QUERY), $query);
     expect($query['code_challenge_method'])->toBe('S256');
     expect($query['prompt'])->toBe('consent');
-    expect($query['scope'])->toBe('products:list orders:list');
+    expect($query['scope'])->toBe('orders:list orders:show');
 
     $user = User::factory()->create(['password' => 'secret']);
     $this->get($authorize)->assertRedirect('/login');
@@ -92,7 +92,7 @@ test('demo completes a real passport authorization and issues a usable token', f
     $callback = $response->headers->get('Location');
     $response = $this->get($callback)->assertOk()->assertSee('Conexão autorizada!')->assertHeader('Cache-Control', 'no-store, private');
     preg_match('~<textarea[^>]*>([^<]+)</textarea>~', $response->getContent(), $matches);
-    $this->withToken(html_entity_decode($matches[1]))->getJson('/products')->assertOk();
+    $this->withToken(html_entity_decode($matches[1]))->getJson('/orders')->assertOk();
     $this->get($callback)->assertStatus(419);
 });
 

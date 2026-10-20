@@ -6,6 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Models\User;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
@@ -25,12 +26,15 @@ class FindUserId extends Tool
     public function handle(Request $request, User $model): Response
     {
         $nameOrEmail = $request->get('name_or_email');
+        if (! is_string($nameOrEmail) || trim($nameOrEmail) === '') {
+            return Response::error('Informe um nome válido.');
+        }
         $user = $model
             ->where('email', 'LIKE', "%{$nameOrEmail}%")
             ->orWhere('name', 'LIKE', "%{$nameOrEmail}%")
             ->first();
 
-        if (!$user) {
+        if (! $user) {
             return Response::error('Usuário não encontrado.');
         }
 
@@ -40,7 +44,7 @@ class FindUserId extends Tool
     /**
      * Get the tool's input schema.
      *
-     * @return array<string, \Illuminate\Contracts\JsonSchema\JsonSchema>
+     * @return array<string, Type>
      */
     public function schema(JsonSchema $schema): array
     {

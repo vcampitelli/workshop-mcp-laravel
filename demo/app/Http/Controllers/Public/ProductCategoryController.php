@@ -1,33 +1,38 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Public;
 
+use App\Domains\ProductCategory\ListProductCategories\ListProductCategoriesUseCase;
+use App\Domains\ProductCategory\ViewProductCategory\ViewProductCategoryUseCase;
+use App\Domains\Shared\UseCaseError;
 use App\Http\Controllers\Controller;
 use App\Http\Validation\ProductCategoryListValidation;
 use App\Models\ProductCategory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class ProductCategoryController extends Controller
 {
-    public function index(Request $request): Collection
+    public function index(Request $request, ListProductCategoriesUseCase $useCase): JsonResponse
     {
-        $filters = $request->validate((new ProductCategoryListValidation)->getRules());
-        $query = ProductCategory::query();
+        $request->validate((new ProductCategoryListValidation)->getRules());
+        $output = $useCase(
+            name: $request->has('name') ? $request->string('name')->toString() : null,
+            parentId: $request->has('parent_id') ? $request->integer('parent_id') : null,
+        );
 
-        if (isset($filters['name'])) {
-            $query->where('name', 'like', '%'.$filters['name'].'%');
-        }
-
-        if (isset($filters['parent_id'])) {
-            $query->where('parent_id', $filters['parent_id']);
-        }
-
-        return $query->get();
+        return response()->json($output->categories);
     }
 
-    public function show(ProductCategory $category): ProductCategory
+    public function show(ProductCategory $category, ViewProductCategoryUseCase $useCase): JsonResponse
     {
-        return $category->load('products');
+        $output = $useCase($category->id);
+        if ($output->error !== null) {
+            abort($output->error === UseCaseError::NotFound ? 404 : 422);
+        }
+
+        return response()->json($output->category);
     }
 }

@@ -9,6 +9,7 @@ use App\Mcp\Mappers\ValidationToArguments;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Prompt;
+use Laravel\Mcp\Server\Prompts\Argument;
 
 class ListOrders extends Prompt
 {
@@ -25,7 +26,7 @@ class ListOrders extends Prompt
     /**
      * Handle the prompt request.
      *
-     * @return list<\Laravel\Mcp\Response>
+     * @return list<Response>
      */
     public function handle(Request $request): array
     {
@@ -43,43 +44,44 @@ class ListOrders extends Prompt
      */
     protected function buildUserMessageFromRequest(Request $request): string
     {
+        /** @var array{status_id?: int|string, user_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string} $validated */
         $validated = $request->validate(
             (new OrderListValidation)->getRules()
         );
 
         $clausules = [];
-        if (!empty($validated['status_id'])) {
+        if (! empty($validated['status_id'])) {
             $clausules[] = "com ID de status {$validated['status_id']}";
         }
-        if (!empty($validated['user_id'])) {
+        if (! empty($validated['user_id'])) {
             $clausules[] = "pelo usuário {$validated['user_id']}";
         }
-        if (!empty($validated['after'])) {
+        if (! empty($validated['after'])) {
             $clausules[] = "após a data {$validated['after']}";
         }
-        if (!empty($validated['before'])) {
+        if (! empty($validated['before'])) {
             $clausules[] = "antes da data {$validated['before']}";
         }
-        if (!empty($validated['amount_lt'])) {
+        if (! empty($validated['amount_lt'])) {
             $clausules[] = "com preço menor que R\${$validated['amount_lt']}";
         }
-        if (!empty($validated['amount_gt'])) {
+        if (! empty($validated['amount_gt'])) {
             $clausules[] = "com preço maior que R\${$validated['amount_gt']}";
         }
 
-        return 'Quais os pedidos realizados ' . implode(', ', $clausules) . '?';
+        return 'Quais os pedidos realizados '.implode(', ', $clausules).'?';
     }
-
 
     /**
      * Get the prompt's arguments.
      *
-     * @return array<int, \Laravel\Mcp\Server\Prompts\Argument>
+     * @return array<int, Argument>
      */
     public function arguments(): array
     {
         /** @var ValidationToArguments $mapper */
         $mapper = \app(ValidationToArguments::class);
+
         return $mapper->map(
             (new OrderListValidation)->getRules()
         );

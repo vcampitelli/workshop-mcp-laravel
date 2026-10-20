@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Passport\Passport;
 use League\OAuth2\Server\ResourceServer;
 
@@ -10,7 +11,7 @@ beforeEach(function () {
     config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
     $this->artisan('migrate', ['--force' => true])->assertExitCode(0);
 
-    DB::table('users')->insert(['id' => 1, 'name' => 'Cliente', 'email' => 'cliente@example.com', 'password' => 'password']);
+    DB::table('users')->insert(['id' => 1, 'name' => 'Cliente', 'email' => 'cliente@example.com', 'password' => Hash::make('password')]);
     DB::table('order_statuses')->insert(['id' => 1, 'name' => 'Pendente']);
     DB::table('order_statuses')->insert(['id' => 2, 'name' => 'Concluído']);
     DB::table('product_categories')->insert(['id' => 1, 'name' => 'Livros']);
@@ -42,12 +43,16 @@ test('protected routes reject requests without a token', function () {
     ] as [$method, $uri]) {
         $this->json($method, $uri)->assertUnauthorized();
     }
-    $this->getJson('/products')->assertUnauthorized();
-    $this->getJson('/product-categories')->assertUnauthorized();
-    $this->getJson('/products/1/reviews')->assertUnauthorized();
+    $this->getJson('/products')->assertOk();
+    $this->getJson('/products/1')->assertOk();
+    $this->getJson('/product-categories')->assertOk();
+    $this->getJson('/product-categories/1')->assertOk();
+    $this->getJson('/products/1/reviews')->assertOk();
 });
 
 test('login preserves the intended OAuth destination', function () {
+    Auth::forgetGuards();
+    Auth::shouldUse('web');
     User::findOrFail(1)->update(['password' => 'secret']);
 
     $this->withSession(['url.intended' => '/oauth/authorize?client_id=demo'])
@@ -60,6 +65,8 @@ test('login preserves the intended OAuth destination', function () {
 });
 
 test('login rejects invalid credentials', function () {
+    Auth::forgetGuards();
+    Auth::shouldUse('web');
     $this->postJson('/login', ['email' => 'cliente@example.com', 'password' => 'wrong'])
         ->assertUnprocessable()->assertJsonValidationErrors('email');
     $this->assertGuest('web');
@@ -84,11 +91,6 @@ test('each operation requires its own scope', function (string $method, string $
     ['PUT', '/orders/1', 'orders:update', ['total_amount' => 25], 200],
     ['DELETE', '/orders/1', 'orders:delete', [], 204],
     ['PATCH', '/orders/1/status', 'orders:update-status', ['status_id' => 2], 200],
-    ['GET', '/products', 'products:list', [], 200],
-    ['GET', '/products/1', 'products:show', [], 200],
-    ['GET', '/product-categories', 'product-categories:list', [], 200],
-    ['GET', '/product-categories/1', 'product-categories:show', [], 200],
-    ['GET', '/products/1/reviews', 'reviews:list', [], 200],
 ]);
 
 test('list permission does not allow creating or deleting orders', function () {

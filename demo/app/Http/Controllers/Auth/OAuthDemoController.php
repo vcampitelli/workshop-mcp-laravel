@@ -1,93 +1,67 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Auth;
 
+use App\Domains\OAuth\CompleteOAuthDemo\CompleteOAuthDemoError;
+use App\Domains\OAuth\CompleteOAuthDemo\CompleteOAuthDemoUseCase;
+use App\Domains\OAuth\CompleteOAuthDemo\CompleteOAuthDemoUseCaseInput;
+use App\Domains\OAuth\StartOAuthDemo\OAuthDemoSession;
+use App\Domains\OAuth\StartOAuthDemo\StartOAuthDemoUseCase;
 use App\Http\Controllers\Controller;
-use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Psr7\ServerRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
-use Laravel\Passport\Http\Controllers\AccessTokenController;
+use Illuminate\Http\Response;
 
 class OAuthDemoController extends Controller
 {
-    public function start(Request $request)
+    public function start(Request $request, StartOAuthDemoUseCase $useCase): RedirectResponse
     {
         abort_unless(app()->environment(['local', 'testing']), 404);
-
-        $ticket = (string) $request->query('ticket');
-        $pending = Cache::lock('oauth-demo-lock:'.$ticket, 5)->block(
-            3, fn () => Cache::pull('oauth-demo:'.$ticket),
-        );
-        abort_unless(is_array($pending), 410, 'Link expirado ou já utilizado. Execute php artisan oauth:demo novamente.');
-
-        $verifier = Str::random(64);
-        $state = Str::random(64);
-        $request->session()->put('oauth_demo', $pending + [
-            'state' => $state,
-            'verifier' => $verifier,
-            'expires_at' => now()->addMinutes(10)->timestamp,
-        ]);
+        $output = $useCase($request->string('ticket')->toString());
+        $session = $output->session;
+        abort_if($session === null, 410, 'Link expirado ou já utilizado. Execute php artisan oauth:demo novamente.');
+        $request->session()->put('oauth_demo', $session);
 
         return redirect(url('/oauth/authorize').'?'.http_build_query([
-            'client_id' => $pending['client_id'],
-            'redirect_uri' => $pending['redirect_uri'],
+            'client_id' => $session->clientId,
+            'redirect_uri' => $session->redirectUri,
             'response_type' => 'code',
-            'scope' => $pending['scope'],
-            'state' => $state,
-            'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '='),
+            'scope' => $session->scope,
+            'state' => $session->state,
+            'code_challenge' => $output->challenge,
             'code_challenge_method' => 'S256',
             'prompt' => 'consent',
         ], '', '&', PHP_QUERY_RFC3986));
     }
 
-    public function callback(Request $request, AccessTokenController $tokens)
+    public function callback(Request $request, CompleteOAuthDemoUseCase $useCase): Response
     {
         abort_unless(app()->environment(['local', 'testing']), 404);
-
-        $pending = $request->session()->get('oauth_demo');
+        $session = $request->session()->get('oauth_demo');
         $state = $request->query('state');
-        abort_unless(is_array($pending) && is_string($state)
-            && hash_equals($pending['state'], $state)
-            && $pending['expires_at'] >= now()->timestamp, 419, 'Estado inválido ou demonstração expirada.');
+        $code = $request->query('code');
+        $authorizationError = $request->query('error');
+        $output = $useCase(new CompleteOAuthDemoUseCaseInput(
+            session: $session instanceof OAuthDemoSession ? $session : null,
+            state: is_string($state) ? $state : null,
+            code: is_string($code) ? $code : null,
+            authorizationError: is_string($authorizationError) ? $authorizationError : null,
+        ));
+        abort_if($output->error === CompleteOAuthDemoError::InvalidState, 419, 'Estado inválido ou demonstração expirada.');
         $request->session()->forget('oauth_demo');
 
-        $token = null;
-        $error = null;
-        $status = 200;
+        $error = match ($output->error) {
+            CompleteOAuthDemoError::AccessDenied => 'Você recusou o acesso. Nenhum token foi emitido.',
+            CompleteOAuthDemoError::MissingCode => 'O callback não recebeu um código de autorização.',
+            CompleteOAuthDemoError::TokenExchangeFailed => 'O Passport rejeitou a troca do código por token. Execute o comando novamente.',
+            null => null,
+            default => 'A autorização não foi concluída. Execute o comando novamente.',
+        };
+        $status = $output->error === null || $output->error === CompleteOAuthDemoError::AccessDenied ? 200 : 400;
 
-        if ($request->query('error') === 'access_denied') {
-            $error = 'Você recusou o acesso. Nenhum token foi emitido.';
-        } elseif ($request->has('error')) {
-            $error = 'A autorização não foi concluída. Execute o comando novamente.';
-            $status = 400;
-        } elseif (! is_string($request->query('code')) || $request->query('code') === '') {
-            $error = 'O callback não recebeu um código de autorização.';
-            $status = 400;
-        } else {
-            // Use o endpoint real do Passport sem fazer uma chamada HTTP ao próprio
-            // servidor, o que bloquearia o servidor de desenvolvimento de uma thread.
-            $response = $tokens->issueToken(
-                (new ServerRequest('POST', url('/oauth/token')))->withParsedBody([
-                    'grant_type' => 'authorization_code',
-                    'client_id' => $pending['client_id'],
-                    'redirect_uri' => $pending['redirect_uri'],
-                    'code_verifier' => $pending['verifier'],
-                    'code' => $request->query('code'),
-                ]),
-                new Response,
-            );
-
-            if ($response->isSuccessful()) {
-                $token = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
-            } else {
-                $error = 'O Passport rejeitou a troca do código por token. Execute o comando novamente.';
-                $status = 400;
-            }
-        }
-
-        return response()->view('auth.oauth-demo', compact('token', 'error'), $status)
+        return response()->view('auth.oauth-demo', ['token' => $output->token, 'error' => $error], $status)
             ->header('Cache-Control', 'no-store')
             ->header('Referrer-Policy', 'no-referrer');
     }

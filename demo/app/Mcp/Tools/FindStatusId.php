@@ -6,6 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Models\OrderStatus;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
@@ -25,11 +26,14 @@ class FindStatusId extends Tool
     public function handle(Request $request, OrderStatus $model): Response
     {
         $name = $request->get('name');
+        if (! is_string($name) || trim($name) === '') {
+            return Response::error('Informe um nome válido.');
+        }
         $status = $model
             ->where('name', 'LIKE', "%{$name}%")
             ->first();
 
-        if (!$status) {
+        if (! $status) {
             return Response::error('Status não encontrado.');
         }
 
@@ -39,7 +43,7 @@ class FindStatusId extends Tool
     /**
      * Get the tool's input schema.
      *
-     * @return array<string, \Illuminate\Contracts\JsonSchema\JsonSchema>
+     * @return array<string, Type>
      */
     public function schema(JsonSchema $schema): array
     {

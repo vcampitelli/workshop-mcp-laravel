@@ -23,11 +23,11 @@
             @else
                 <h1>Conexão autorizada!</h1>
                 <p>O Passport validou o código e o PKCE e emitiu um token real para o Meu Ecommerce.</p>
-                <p>Tipo: {{ $token['token_type'] }}. Expira em {{ $token['expires_in'] }} segundos.</p>
+                <p>Tipo: {{ $token->tokenType }}. Expira em {{ $token->expiresIn }} segundos.</p>
                 <label for="access-token">Token de acesso</label>
-                <textarea id="access-token" readonly spellcheck="false">{{ $token['access_token'] }}</textarea>
-                <p>Para consultar os produtos, substitua <code>SEU_TOKEN</code> pelo token acima:</p>
-                <pre><code>curl {{ url('/products') }} \
+                <textarea id="access-token" readonly spellcheck="false">{{ $token->accessToken }}</textarea>
+                <p>Para consultar os pedidos, substitua <code>SEU_TOKEN</code> pelo token acima:</p>
+                <pre><code>curl {{ url('/orders') }} \
   -H "Accept: application/json" \
   -H "Authorization: Bearer SEU_TOKEN"</code></pre>
             @endif

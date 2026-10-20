@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class OrderShipment extends Model
 {
+    /** @use HasFactory<Factory<self>> */
     use HasFactory;
 
     protected $fillable = [
@@ -19,6 +21,7 @@ class OrderShipment extends Model
         'delivered_at',
     ];
 
+    /** @return BelongsTo<Order, $this> */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
@@ -27,7 +30,7 @@ class OrderShipment extends Model
     protected function casts(): array
     {
         return [
-            'shipped_at'   => 'datetime',
+            'shipped_at' => 'datetime',
             'delivered_at' => 'datetime',
         ];
     }

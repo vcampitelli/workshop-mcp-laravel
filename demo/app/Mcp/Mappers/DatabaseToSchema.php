@@ -11,32 +11,35 @@ use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * @phpstan-type Column array{name: string, type: string, type_name: string, nullable: bool, default: mixed, comment: string|null, length?: int}
+ */
 class DatabaseToSchema
 {
     private JsonSchema $schema;
 
     /**
      * Objetos já mapeados para evitar reprocessar schemas
+     *
      * @var array<string, Types\ObjectType>
      */
     private array $pool = [];
 
     public function __construct()
     {
-        $this->schema = new JsonSchemaTypeFactory();
+        $this->schema = new JsonSchemaTypeFactory;
     }
 
     /**
      * Retorna o schema de uma model
-     * @param Model $model
-     * @param array<string, Model> $relations Relacionamentos dessa model
-     * @return Types\ObjectType
+     *
+     * @param  array<string, Model>  $relations  Relacionamentos dessa model
      */
     public function mapModel(Model $model, array $relations = []): Types\ObjectType
     {
         return $this->mapTable(
             table: $model->getTable(),
-            connection: $model->getConnectionName() ?? $model->getConnection()->getName(),
+            connection: $model->getConnectionName() ?? $model->getConnection()->getName() ?? config()->string('database.default'),
             hidden: $model->getHidden(),
             relations: $relations,
         );
@@ -44,11 +47,11 @@ class DatabaseToSchema
 
     /**
      * Retorna o schema de uma tabela
-     * @param string $table Nome da tabela
-     * @param string $connection Nome da conexão (ex: mysql)
-     * @param array<string> $hidden Colunas a ignorar
-     * @param array<string, Model> $relations Relacionamentos dessa model
-     * @return Types\ObjectType
+     *
+     * @param  string  $table  Nome da tabela
+     * @param  string  $connection  Nome da conexão (ex: mysql)
+     * @param  array<string>  $hidden  Colunas a ignorar
+     * @param  array<string, Model>  $relations  Relacionamentos dessa model
      */
     public function mapTable(
         string $table,
@@ -58,7 +61,7 @@ class DatabaseToSchema
     ): Types\ObjectType {
         $key = "{$connection}:{$table}";
 
-        if (!isset($this->pool[$key])) {
+        if (! isset($this->pool[$key])) {
             $schema = Schema::connection($connection);
             $this->pool[$key] = $this->doMapTable($schema, $table, $hidden, $relations);
         }
@@ -68,11 +71,11 @@ class DatabaseToSchema
 
     /**
      * Retorna o schema de uma tabela
-     * @param DatabaseBuilder $schema Schema builder do banco de dados
-     * @param string $table Nome da tabela
-     * @param array<string> $hidden Colunas a ignorar
-     * @param array<string, Model> $relations Relacionamentos dessa model
-     * @return Types\ObjectType
+     *
+     * @param  DatabaseBuilder  $schema  Schema builder do banco de dados
+     * @param  string  $table  Nome da tabela
+     * @param  array<string>  $hidden  Colunas a ignorar
+     * @param  array<string, Model>  $relations  Relacionamentos dessa model
      */
     protected function doMapTable(
         DatabaseBuilder $schema,
@@ -81,7 +84,7 @@ class DatabaseToSchema
         array $relations = [],
     ): Types\ObjectType {
         $properties = $this->getColumns($schema, $table);
-        if (!empty($hidden)) {
+        if (! empty($hidden)) {
             $properties = \array_diff_key($properties, \array_flip($hidden));
         }
         foreach ($relations as $field => $model) {
@@ -93,13 +96,16 @@ class DatabaseToSchema
 
     /**
      * Retorna as colunas de uma tabela
-     * @param DatabaseBuilder $schema Schema builder do banco de dados
-     * @param string $table Nome da tabela
+     *
+     * @param  DatabaseBuilder  $schema  Schema builder do banco de dados
+     * @param  string  $table  Nome da tabela
+     * @return array<string, Types\Type>
      */
     protected function getColumns(DatabaseBuilder $schema, string $table): array
     {
         $properties = [];
 
+        /** @var list<Column> $columns */
         $columns = $schema->getColumns($table);
         foreach ($columns as $column) {
             $properties[$column['name']] = $this->mapColumnToSchema($column);
@@ -110,13 +116,15 @@ class DatabaseToSchema
 
     /**
      * Map a single column to JSON Schema property
+     *
+     * @param  Column  $column
      */
     protected function mapColumnToSchema(array $column): Types\Type
     {
         $type = $this->mapTypeFromColumn($column)->required();
 
         // Add description if comment exists
-        if (!empty($column['comment'])) {
+        if (! empty($column['comment'])) {
             $type->description($column['comment']);
         }
         // @TODO description
@@ -133,14 +141,21 @@ class DatabaseToSchema
         }
 
         // Handle default values
-        if ((isset($column['default'])) && ($column['default'] !== 'NULL')) {
-            $type->default($column['default']);
+        $default = $column['default'];
+        if ($default !== null && $default !== 'NULL') {
+            if ($type instanceof Types\StringType && is_string($default)) {
+                $type->default($default);
+            } elseif ($type instanceof Types\IntegerType && filter_var($default, FILTER_VALIDATE_INT) !== false) {
+                $type->default((int) filter_var($default, FILTER_VALIDATE_INT));
+            } elseif ($type instanceof Types\NumberType && is_numeric($default)) {
+                $type->default((float) $default);
+            } elseif ($type instanceof Types\BooleanType && in_array($default, [true, false, 0, 1, '0', '1'], true)) {
+                $type->default((bool) $default);
+            }
         }
 
         // Handle nullable
-        if ($column['nullable'] !== null) {
-            $type->nullable($column['nullable']);
-        }
+        $type->nullable($column['nullable']);
 
         // @TODO checar outros tipos (ex: enum)
 
@@ -149,7 +164,9 @@ class DatabaseToSchema
 
     /**
      * Mapeia o tipo de coluna no MySQL para um tipo do JSONSchema
-     * @param array{name: string, type: string, type_name: string} $column Dados da coluna retornados pelo Schema Builder
+     *
+     * @param  array{name: string, type: string, type_name: string}  $column  Dados da coluna retornados pelo Schema Builder
+     *
      * @link https://dev.mysql.com/doc/refman/8.4/en/integer-types.html
      */
     protected function mapTypeFromColumn(array $column): Types\Type
@@ -169,7 +186,7 @@ class DatabaseToSchema
             'mediumint' => $this->schema->integer()->min(-8388608)->max(8388607),
             'mediumint unsigned' => $this->schema->integer()->min(0)->max(16777215),
 
-            'int' => $this->schema->integer()->min(2147483648)->max(2147483647),
+            'int' => $this->schema->integer()->min(-2147483648)->max(2147483647),
             'int unsigned' => $this->schema->integer()->min(0)->max(4294967295),
 
             'bigint' => $this->schema->integer()->min(\PHP_INT_MIN)->max(\PHP_INT_MAX),

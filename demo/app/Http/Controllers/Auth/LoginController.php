@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Domains\Auth\AuthenticateUser\AuthenticateUserUseCase;
+use App\Domains\Auth\AuthenticateUser\AuthenticateUserUseCaseInput;
+use App\Domains\Auth\Logout\LogoutUseCase;
 use App\Http\Controllers\Controller;
 use App\Http\Validation\LoginValidation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -17,11 +19,16 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, AuthenticateUserUseCase $useCase): RedirectResponse
     {
-        $credentials = $request->validate((new LoginValidation)->getRules());
+        $request->validate((new LoginValidation)->getRules());
+        $output = $useCase(new AuthenticateUserUseCaseInput(
+            email: $request->string('email')->toString(),
+            password: $request->string('password')->toString(),
+            remember: $request->boolean('remember'),
+        ));
 
-        if (!Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
+        if ($output->error !== null) {
             throw ValidationException::withMessages(['email' => 'E-mail ou senha inválidos.']);
         }
 
@@ -30,9 +37,9 @@ class LoginController extends Controller
         return redirect()->intended('/');
     }
 
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request, LogoutUseCase $useCase): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        $useCase();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
