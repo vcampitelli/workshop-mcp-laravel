@@ -9,6 +9,7 @@ use App\Domains\Order\PrepareEditOrder\PrepareEditOrderUseCase;
 use App\Domains\Order\UpdateOrder\UpdateOrderUseCase;
 use App\Domains\Order\UpdateOrder\UpdateOrderUseCaseInput;
 use App\Domains\Order\UpdateOrderStatus\UpdateOrderStatusUseCase;
+use App\Domains\Order\UpdateOrderStatus\UpdateOrderStatusUseCaseInput;
 use App\Domains\Order\ViewOrder\ViewOrderUseCase;
 use App\Domains\Product\ViewProduct\ViewProductUseCase;
 use App\Domains\ProductCategory\ViewProductCategory\ViewProductCategoryUseCase;
@@ -61,7 +62,7 @@ test('missing records are represented by outputs instead of HTTP exceptions', fu
         (new ViewOrderUseCase)(999),
         (new PrepareEditOrderUseCase)(999),
         (new UpdateOrderUseCase)(new UpdateOrderUseCaseInput(999, totalAmount: 10)),
-        (new UpdateOrderStatusUseCase)(999, 1),
+        (new UpdateOrderStatusUseCase)(new UpdateOrderStatusUseCaseInput(999, 1)),
         (new DeleteOrderUseCase)(999),
         (new ViewProductUseCase)(999),
         (new ViewProductCategoryUseCase)(999),
@@ -74,7 +75,7 @@ test('missing records are represented by outputs instead of HTTP exceptions', fu
 test('invalid updates return domain errors and leave the order unchanged', function () {
     $order = Order::query()->create(['user_id' => 1, 'status_id' => 1, 'total_amount' => 50]);
     $result = (new UpdateOrderUseCase)(new UpdateOrderUseCaseInput($order->id, userId: 999, totalAmount: 100));
-    $status = (new UpdateOrderStatusUseCase)($order->id, 999);
+    $status = (new UpdateOrderStatusUseCase)(new UpdateOrderStatusUseCaseInput($order->id, 999));
     expect($result->error)->toBe(UseCaseError::InvalidInput)
         ->and($status->error)->toBe(UseCaseError::InvalidInput)
         ->and($order->fresh()->total_amount)->toBe(50.0);

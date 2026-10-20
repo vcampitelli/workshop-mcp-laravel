@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Prompts;
 
-use App\Http\Validation\OrderListValidation;
+use App\Domains\Order\ListOrders\ListOrdersUseCaseInput;
 use App\Mcp\Mappers\ValidationToArguments;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -44,29 +44,26 @@ class ListOrders extends Prompt
      */
     protected function buildUserMessageFromRequest(Request $request): string
     {
-        /** @var array{status_id?: int|string, user_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string} $validated */
-        $validated = $request->validate(
-            (new OrderListValidation)->getRules()
-        );
+        $input = ListOrdersUseCaseInput::fromArray($request->all());
 
         $clausules = [];
-        if (! empty($validated['status_id'])) {
-            $clausules[] = "com ID de status {$validated['status_id']}";
+        if ($input->statusId !== null) {
+            $clausules[] = "com ID de status {$input->statusId}";
         }
-        if (! empty($validated['user_id'])) {
-            $clausules[] = "pelo usuário {$validated['user_id']}";
+        if ($input->userId !== null) {
+            $clausules[] = "pelo usuário {$input->userId}";
         }
-        if (! empty($validated['after'])) {
-            $clausules[] = "após a data {$validated['after']}";
+        if ($input->after !== null) {
+            $clausules[] = "após a data {$input->after}";
         }
-        if (! empty($validated['before'])) {
-            $clausules[] = "antes da data {$validated['before']}";
+        if ($input->before !== null) {
+            $clausules[] = "antes da data {$input->before}";
         }
-        if (! empty($validated['amount_lt'])) {
-            $clausules[] = "com preço menor que R\${$validated['amount_lt']}";
+        if ($input->amountLt !== null) {
+            $clausules[] = "com preço menor que R\${$input->amountLt}";
         }
-        if (! empty($validated['amount_gt'])) {
-            $clausules[] = "com preço maior que R\${$validated['amount_gt']}";
+        if ($input->amountGt !== null) {
+            $clausules[] = "com preço maior que R\${$input->amountGt}";
         }
 
         return 'Quais os pedidos realizados '.implode(', ', $clausules).'?';
@@ -83,7 +80,7 @@ class ListOrders extends Prompt
         $mapper = \app(ValidationToArguments::class);
 
         return $mapper->map(
-            (new OrderListValidation)->getRules()
+            ListOrdersUseCaseInput::rules()
         );
     }
 }

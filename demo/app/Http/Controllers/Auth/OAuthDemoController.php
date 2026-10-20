@@ -43,12 +43,12 @@ class OAuthDemoController extends Controller
         $state = $request->query('state');
         $code = $request->query('code');
         $authorizationError = $request->query('error');
-        $output = $useCase(new CompleteOAuthDemoUseCaseInput(
-            session: $session instanceof OAuthDemoSession ? $session : null,
-            state: is_string($state) ? $state : null,
-            code: is_string($code) ? $code : null,
-            authorizationError: is_string($authorizationError) ? $authorizationError : null,
-        ));
+        $output = $useCase(CompleteOAuthDemoUseCaseInput::fromArray([
+            'session' => $session instanceof OAuthDemoSession ? $session : null,
+            'state' => is_string($state) ? $state : null,
+            'code' => is_string($code) ? $code : null,
+            'authorization_error' => is_string($authorizationError) ? $authorizationError : null,
+        ]));
         abort_if($output->error === CompleteOAuthDemoError::InvalidState, 419, 'Estado inválido ou demonstração expirada.');
         $request->session()->forget('oauth_demo');
 

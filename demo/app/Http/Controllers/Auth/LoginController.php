@@ -6,7 +6,6 @@ use App\Domains\Auth\AuthenticateUser\AuthenticateUserUseCase;
 use App\Domains\Auth\AuthenticateUser\AuthenticateUserUseCaseInput;
 use App\Domains\Auth\Logout\LogoutUseCase;
 use App\Http\Controllers\Controller;
-use App\Http\Validation\LoginValidation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -21,12 +20,7 @@ class LoginController extends Controller
 
     public function store(Request $request, AuthenticateUserUseCase $useCase): RedirectResponse
     {
-        $request->validate((new LoginValidation)->getRules());
-        $output = $useCase(new AuthenticateUserUseCaseInput(
-            email: $request->string('email')->toString(),
-            password: $request->string('password')->toString(),
-            remember: $request->boolean('remember'),
-        ));
+        $output = $useCase(AuthenticateUserUseCaseInput::fromArray($request->all()));
 
         if ($output->error !== null) {
             throw ValidationException::withMessages(['email' => 'E-mail ou senha inválidos.']);

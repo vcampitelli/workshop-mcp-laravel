@@ -42,3 +42,12 @@ test('ecommerce login displays errors and retains the email', function () {
         ->assertSee('role="alert"', false);
     $this->assertGuest('web');
 });
+
+test('login input validation uses the native JSON and form error handlers', function () {
+    $invalid = ['email' => 'invalid email', 'password' => ''];
+    $this->postJson('/login', $invalid)->assertUnprocessable()
+        ->assertJsonStructure(['message', 'errors' => ['email', 'password']]);
+    $this->from('/login')->post('/login', $invalid)
+        ->assertRedirect('/login')->assertSessionHasErrors(['email', 'password']);
+    $this->assertGuest('web');
+});

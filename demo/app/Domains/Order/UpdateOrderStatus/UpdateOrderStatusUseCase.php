@@ -10,16 +10,16 @@ use App\Models\OrderStatus;
 
 final class UpdateOrderStatusUseCase
 {
-    public function __invoke(int $orderId, int $statusId): UpdateOrderStatusUseCaseOutput
+    public function __invoke(UpdateOrderStatusUseCaseInput $input): UpdateOrderStatusUseCaseOutput
     {
-        $order = Order::query()->find($orderId);
+        $order = Order::query()->find($input->orderId);
         if ($order === null) {
             return new UpdateOrderStatusUseCaseOutput(error: UseCaseError::NotFound);
         }
-        if (! OrderStatus::query()->whereKey($statusId)->exists()) {
+        if (! OrderStatus::query()->whereKey($input->statusId)->exists()) {
             return new UpdateOrderStatusUseCaseOutput(error: UseCaseError::InvalidInput);
         }
-        $order->update(['status_id' => $statusId]);
+        $order->update(['status_id' => $input->statusId]);
 
         return new UpdateOrderStatusUseCaseOutput($order->load(['status', 'user']));
     }

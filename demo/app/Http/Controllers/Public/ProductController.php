@@ -9,7 +9,6 @@ use App\Domains\Product\ListProducts\ListProductsUseCaseInput;
 use App\Domains\Product\ViewProduct\ViewProductUseCase;
 use App\Domains\Shared\UseCaseError;
 use App\Http\Controllers\Controller;
-use App\Http\Validation\ProductListValidation;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,14 +17,7 @@ class ProductController extends Controller
 {
     public function index(Request $request, ListProductsUseCase $useCase): JsonResponse
     {
-        $request->validate((new ProductListValidation)->getRules());
-        $output = $useCase(new ListProductsUseCaseInput(
-            name: $request->has('name') ? $request->string('name')->toString() : null,
-            categoryId: $request->has('product_category_id') ? $request->integer('product_category_id') : null,
-            statusId: $request->has('product_status_id') ? $request->integer('product_status_id') : null,
-            priceLt: $request->has('price_lt') ? $request->float('price_lt') : null,
-            priceGt: $request->has('price_gt') ? $request->float('price_gt') : null,
-        ));
+        $output = $useCase(ListProductsUseCaseInput::fromArray($request->all()));
 
         return response()->json($output->products);
     }

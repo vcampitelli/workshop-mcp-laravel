@@ -157,3 +157,12 @@ test('reviews are scoped to the requested product', function () {
         ->assertUnprocessable()->assertJsonValidationErrors('rating');
     $this->getJson('/products/999/reviews')->assertNotFound();
 });
+
+test('route identifiers override identifiers supplied in the request body', function () {
+    DB::table('orders')->insert(['id' => 1, 'user_id' => 1, 'status_id' => 1, 'total_amount' => 50]);
+    $this->patchJson('/orders/1', ['order_id' => 999, 'total_amount' => 10])
+        ->assertOk()->assertJsonPath('id', 1)->assertJsonPath('total_amount', 10);
+    $this->patchJson('/orders/1/status', ['order_id' => 999, 'status_id' => 2])
+        ->assertOk()->assertJsonPath('id', 1)->assertJsonPath('status.id', 2);
+    $this->getJson('/products/1/reviews?product_id=999')->assertOk();
+});

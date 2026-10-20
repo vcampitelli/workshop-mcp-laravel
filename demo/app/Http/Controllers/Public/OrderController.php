@@ -14,13 +14,10 @@ use App\Domains\Order\PrepareEditOrder\PrepareEditOrderUseCase;
 use App\Domains\Order\UpdateOrder\UpdateOrderUseCase;
 use App\Domains\Order\UpdateOrder\UpdateOrderUseCaseInput;
 use App\Domains\Order\UpdateOrderStatus\UpdateOrderStatusUseCase;
+use App\Domains\Order\UpdateOrderStatus\UpdateOrderStatusUseCaseInput;
 use App\Domains\Order\ViewOrder\ViewOrderUseCase;
 use App\Domains\Shared\UseCaseError;
 use App\Http\Controllers\Controller;
-use App\Http\Validation\OrderListValidation;
-use App\Http\Validation\OrderStatusValidation;
-use App\Http\Validation\OrderStoreValidation;
-use App\Http\Validation\OrderUpdateValidation;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,15 +32,7 @@ class OrderController extends Controller implements HasMiddleware
 
     public function index(Request $request, ListOrdersUseCase $useCase): JsonResponse
     {
-        $request->validate((new OrderListValidation)->getRules());
-        $output = $useCase(new ListOrdersUseCaseInput(
-            statusId: $request->has('status_id') ? $request->integer('status_id') : null,
-            userId: $request->has('user_id') ? $request->integer('user_id') : null,
-            after: $request->has('after') ? $request->string('after')->toString() : null,
-            before: $request->has('before') ? $request->string('before')->toString() : null,
-            amountLt: $request->has('amount_lt') ? $request->float('amount_lt') : null,
-            amountGt: $request->has('amount_gt') ? $request->float('amount_gt') : null,
-        ));
+        $output = $useCase(ListOrdersUseCaseInput::fromArray($request->all()));
 
         return response()->json($output->orders);
     }
@@ -55,12 +44,7 @@ class OrderController extends Controller implements HasMiddleware
 
     public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
     {
-        $request->validate((new OrderStoreValidation)->getRules());
-        $output = $useCase(new CreateOrderUseCaseInput(
-            userId: $request->integer('user_id'),
-            statusId: $request->integer('status_id'),
-            totalAmount: $request->float('total_amount'),
-        ));
+        $output = $useCase(CreateOrderUseCaseInput::fromArray($request->all()));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
@@ -90,13 +74,7 @@ class OrderController extends Controller implements HasMiddleware
 
     public function update(Request $request, Order $order, UpdateOrderUseCase $useCase): JsonResponse
     {
-        $request->validate((new OrderUpdateValidation)->getRules());
-        $output = $useCase(new UpdateOrderUseCaseInput(
-            orderId: $order->id,
-            userId: $request->has('user_id') ? $request->integer('user_id') : null,
-            statusId: $request->has('status_id') ? $request->integer('status_id') : null,
-            totalAmount: $request->has('total_amount') ? $request->float('total_amount') : null,
-        ));
+        $output = $useCase(UpdateOrderUseCaseInput::fromArray(array_replace($request->all(), ['order_id' => $order->id])));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
@@ -116,8 +94,7 @@ class OrderController extends Controller implements HasMiddleware
 
     public function updateStatus(Request $request, Order $order, UpdateOrderStatusUseCase $useCase): JsonResponse
     {
-        $request->validate((new OrderStatusValidation)->getRules());
-        $output = $useCase($order->id, $request->integer('status_id'));
+        $output = $useCase(UpdateOrderStatusUseCaseInput::fromArray(array_replace($request->all(), ['order_id' => $order->id])));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }

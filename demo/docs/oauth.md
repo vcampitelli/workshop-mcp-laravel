@@ -121,12 +121,18 @@ aplicação, com o mesmo banco, cache e `APP_URL`.
 ## Organização das ações
 
 Cada ação está em `app/Domains/<Domínio>/<Ação>/`, com o use case e seu
-`Output`. Ações com três ou mais parâmetros usam um `Input` tipado. O método
+`Output`. Ações com três ou mais parâmetros ou com regras de validação usam um `Input` tipado. O método
 `__invoke` recebe apenas os dados necessários; não recebe requests, sessões ou
 respostas HTTP. Outputs de erro usam códigos de domínio, convertidos em
 respostas HTTP pelas controllers.
 
-As controllers validam e convertem os parâmetros e formatam a resposta. A
+Os inputs estendem `UseCaseInput` e expõem `rules()` e `fromArray()`. A fábrica
+valida os dados com o Validator do Laravel e delega a conversão dos tipos ao
+input concreto. Dados inválidos lançam `ValidationException`: o Laravel retorna
+422 para requisições JSON, redireciona formulários com os erros na sessão e o
+MCP converte a exceção em erro da ferramenta.
+
+As controllers passam os dados aos inputs e formatam a resposta. A
 ferramenta MCP de pedidos chama `ListOrdersUseCase` diretamente, usando o mesmo
 filtro da API. As sessões e os redirecionamentos de login/OAuth continuam nos
 adaptadores HTTP; a troca de tokens do Passport usa o contrato `TokenIssuer`

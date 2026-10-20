@@ -6,7 +6,6 @@ namespace App\Mcp\Tools;
 
 use App\Domains\Order\ListOrders\ListOrdersUseCase;
 use App\Domains\Order\ListOrders\ListOrdersUseCaseInput;
-use App\Http\Validation\OrderListValidation;
 use App\Mcp\Mappers\DatabaseToSchema;
 use App\Mcp\Mappers\ValidationToSchema;
 use App\Models\Order;
@@ -33,16 +32,7 @@ class ListOrders extends Tool
      */
     public function handle(Request $request, ListOrdersUseCase $useCase): ResponseFactory
     {
-        /** @var array{status_id?: int|string, user_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string} $filters */
-        $filters = $request->validate((new OrderListValidation)->getRules());
-        $output = $useCase(new ListOrdersUseCaseInput(
-            statusId: isset($filters['status_id']) ? (int) $filters['status_id'] : null,
-            userId: isset($filters['user_id']) ? (int) $filters['user_id'] : null,
-            after: $filters['after'] ?? null,
-            before: $filters['before'] ?? null,
-            amountLt: isset($filters['amount_lt']) ? (float) $filters['amount_lt'] : null,
-            amountGt: isset($filters['amount_gt']) ? (float) $filters['amount_gt'] : null,
-        ));
+        $output = $useCase(ListOrdersUseCaseInput::fromArray($request->all()));
 
         return Response::structured(['orders' => $output->orders->toArray()]);
     }
@@ -58,7 +48,7 @@ class ListOrders extends Tool
     {
 
         return $this->mapper->map(
-            (new OrderListValidation)->getRules()
+            ListOrdersUseCaseInput::rules()
         );
     }
 
