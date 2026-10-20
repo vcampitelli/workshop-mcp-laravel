@@ -11,10 +11,16 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Collection;
 
-class OrderController extends Controller
+class OrderController extends Controller implements HasMiddleware
 {
+    public static function middleware(): array
+    {
+        return ['auth:api'];
+    }
+
     public function index(Request $request): Collection
     {
         $query = Order::query();

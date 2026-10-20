@@ -29,7 +29,19 @@ test('protected routes reject requests without a token', function () {
     Auth::forgetGuards();
     Auth::shouldUse('api');
 
-    $this->getJson('/orders')->assertUnauthorized();
+    foreach ([
+        ['GET', '/orders'],
+        ['GET', '/orders/create'],
+        ['POST', '/orders'],
+        ['GET', '/orders/1'],
+        ['GET', '/orders/1/edit'],
+        ['PUT', '/orders/1'],
+        ['PATCH', '/orders/1'],
+        ['DELETE', '/orders/1'],
+        ['PATCH', '/orders/1/status'],
+    ] as [$method, $uri]) {
+        $this->json($method, $uri)->assertUnauthorized();
+    }
     $this->getJson('/products')->assertUnauthorized();
     $this->getJson('/product-categories')->assertUnauthorized();
     $this->getJson('/products/1/reviews')->assertUnauthorized();

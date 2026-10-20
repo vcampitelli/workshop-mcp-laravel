@@ -21,7 +21,7 @@ class LoginController extends Controller
     {
         $credentials = $request->validate((new LoginValidation)->getRules());
 
-        if (!Auth::guard('web')->attempt($credentials)) {
+        if (!Auth::guard('web')->attempt($credentials, $request->boolean('remember'))) {
             throw ValidationException::withMessages(['email' => 'E-mail ou senha inválidos.']);
         }
 

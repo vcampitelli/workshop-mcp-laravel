@@ -9,13 +9,15 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::factory(20)
-            ->create();
-
-        User::factory()
-            ->create([
-                'name'  => 'Test User',
-                'email' => 'test@example.com',
-            ]);
+        for ($number = 1; $number <= 10; $number++) {
+            User::updateOrCreate(
+                ['email' => "user{$number}@example.com"],
+                [
+                    'name' => "User {$number}",
+                    'password' => 'password',
+                    'email_verified_at' => now(),
+                ],
+            );
+        }
     }
 }

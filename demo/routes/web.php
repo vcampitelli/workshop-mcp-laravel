@@ -1,7 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\OAuthDemoController;
+use Illuminate\Support\Facades\Route;
+
+if (app()->environment(['local', 'testing'])) {
+    Route::get('/demo/oauth/start', [OAuthDemoController::class, 'start'])
+        ->middleware('signed')->name('oauth.demo.start');
+    Route::get('/demo/oauth/callback', [OAuthDemoController::class, 'callback'])
+        ->name('oauth.demo.callback');
+}
 
 Route::get('/', function () {
     return view('welcome');

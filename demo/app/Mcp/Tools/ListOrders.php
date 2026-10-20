@@ -40,6 +40,8 @@ class ListOrders extends Tool
         return Response::structured(['orders' => $response->toArray()]);
     }
 
+    public function __construct(private ValidationToSchema $mapper) {}
+
     /**
      * Get the tool's input schema.
      *
@@ -48,9 +50,9 @@ class ListOrders extends Tool
     public function schema(JsonSchema $schema): array
     {
         /** @var ValidationToSchema $mapper */
-        $mapper = \app(ValidationToSchema::class);
+        // $mapper = \app(ValidationToSchema::class);
 
-        return $mapper->map(
+        return $this->mapper->map(
             (new OrderListValidation)->getRules()
         );
     }

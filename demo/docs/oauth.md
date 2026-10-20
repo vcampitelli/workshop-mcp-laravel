@@ -84,3 +84,37 @@ Os testes usam SQLite em memória e tokens simulados pelo Passport. Cobrem 401,
 403 e acesso com o scope correto para cada operação, além dos fluxos das
 controllers. A emissão e renovação de tokens reais podem ser demonstradas no
 cliente OAuth2 acima.
+
+## Demonstração pelo Artisan
+
+Com a aplicação rodando em `APP_URL` (por padrão, `http://localhost:8000`), execute:
+
+```sh
+php artisan oauth:demo
+# Se a aplicação estiver no Docker:
+docker compose exec api php artisan oauth:demo
+```
+
+O comando cria ou reutiliza o cliente público **Assistente de Compras (demo)** e
+imprime um link assinado, de uso único, válido por dez minutos. Abra esse link
+no navegador. O fluxo passa pelo login existente e pelo consentimento real do
+Passport, solicitando `products:list` e `orders:list`. O parâmetro
+`prompt=consent` mantém a tela de consentimento visível em novas demonstrações.
+
+Para escolher outras permissões, repita a opção `--scope`:
+
+```sh
+php artisan oauth:demo --scope=products:list --scope=reviews:list
+```
+
+O início do fluxo guarda `state` e o verificador PKCE na sessão do navegador.
+O callback `/demo/oauth/callback` valida o estado e a expiração e troca o código
+por um token real usando o endpoint do Passport internamente, sem fazer uma
+requisição HTTP de volta ao servidor de desenvolvimento. A página exibe o
+access token e um exemplo de chamada à API; o refresh token não é exibido.
+Ao recusar, a página informa a decisão e nenhum token é emitido.
+
+O comando e as rotas da demonstração estão disponíveis somente nos ambientes
+`local` e `testing`. As chaves e migrations do Passport devem ter sido preparadas
+conforme a seção Preparação. Execute o comando no mesmo ambiente/container da
+aplicação, com o mesmo banco, cache e `APP_URL`.
