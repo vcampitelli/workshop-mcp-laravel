@@ -112,14 +112,25 @@ pre.code-wrapper > kbd {
   border: 1px rgb(var(--gray-800)) solid;
   border-bottom: none;
   background-color: rgb(var(--gray-900));
-  padding: 5px 10px 0 10px;
+  padding: 5px 10px 5px 10px;
   letter-spacing: -0.04em;
   font-size: 0.75em;
   color: rgb(var(--gray-400));
 }
+pre.code-wrapper > kbd:before {
+  margin-right: 5px;
+  font-family: "tabler-icons" !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  content: "\eaa4"; /* .ti-file */
+}
 pre.code-wrapper > kbd + .hljs {
   border-top-left-radius: 0;
-  margin-top: -4px;
+  /*margin-top: -4px;*/
 }
 
 /* Tipografia */
@@ -153,7 +164,7 @@ h1 > .ti,
 h2 > .ti,
 h3 > .ti {
   display: inline-block;
-  margin-left: -1.15em;
+  margin-left: -1.19em;
   color: var(--code-inline-color);
 }
 
