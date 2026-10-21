@@ -8,21 +8,15 @@ use App\Domains\Order\ListOrders\ListOrdersUseCaseInput;
 use App\Mcp\Mappers\ValidationToArguments;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Attributes\Title;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Prompts\Argument;
 
+#[Title('Listar pedidos')]
+#[Description('Lista os pedidos da loja segundo diversos critérios.')]
 class ListOrders extends Prompt
 {
-    /**
-     * The prompt's title.
-     */
-    protected string $title = 'Prompt de Pedidos';
-
-    /**
-     * The prompt's description.
-     */
-    protected string $description = 'Lista os pedidos da API.';
-
     /**
      * Handle the prompt request.
      *

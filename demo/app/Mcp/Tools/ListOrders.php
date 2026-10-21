@@ -6,6 +6,7 @@ namespace App\Mcp\Tools;
 
 use App\Domains\Order\ListOrders\ListOrdersUseCase;
 use App\Domains\Order\ListOrders\ListOrdersUseCaseInput;
+use App\Mcp\Resources\OrdersDashboardApp;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\User;
@@ -14,7 +15,9 @@ use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
+use Laravel\Mcp\Server\Attributes\RendersApp;
 
+#[RendersApp(resource: OrdersDashboardApp::class)]
 class ListOrders extends ValidationTool
 {
     /**

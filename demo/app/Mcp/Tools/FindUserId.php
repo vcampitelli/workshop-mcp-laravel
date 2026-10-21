@@ -23,7 +23,7 @@ class FindUserId extends Tool
     /**
      * Handle the tool request.
      */
-    public function handle(Request $request, User $model): Response
+    public function handle(Request $request, User $model): \Generator
     {
         $nameOrEmail = $request->get('name_or_email');
         if (! is_string($nameOrEmail) || trim($nameOrEmail) === '') {

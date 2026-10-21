@@ -6,28 +6,18 @@ namespace App\Mcp\Servers;
 
 use App\Mcp\Prompts;
 use App\Mcp\Resources;
+use App\Mcp\Resources\OrdersDashboardApp;
 use App\Mcp\Tools;
 use Laravel\Mcp\Server;
+use Laravel\Mcp\Server\Attributes\Instructions;
+use Laravel\Mcp\Server\Attributes\Name;
+use Laravel\Mcp\Server\Attributes\Version;
 
-class OrdersServer extends Server
+#[Name('Meu Ecommerce Server')]
+#[Version('0.0.1')]
+#[Instructions('Providencia informações sobre produtos e pedidos de uma loja.')]
+class EcommerceServer extends Server
 {
-    /**
-     * The MCP server's name.
-     */
-    protected string $name = 'Orders Server';
-
-    /**
-     * The MCP server's version.
-     */
-    protected string $version = '0.0.1';
-
-    /**
-     * The MCP server's instructions for the LLM.
-     */
-    protected string $instructions = <<<'MARKDOWN'
-        Esse servidor providencia informações sobre os pedidos de uma loja.
-    MARKDOWN;
-
     /**
      * The tools registered with this MCP server.
      *
@@ -37,6 +27,8 @@ class OrdersServer extends Server
         Tools\FindStatusId::class,
         Tools\FindUserId::class,
         Tools\ListOrders::class,
+        Tools\ListProducts::class,
+        Tools\OrdersDashboard::class,
     ];
 
     /**
@@ -46,6 +38,7 @@ class OrdersServer extends Server
      */
     protected array $resources = [
         Resources\Guidelines::class,
+        OrdersDashboardApp::class,
     ];
 
     /**
