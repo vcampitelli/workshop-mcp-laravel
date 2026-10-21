@@ -6,8 +6,6 @@ namespace App\Mcp\Tools;
 
 use App\Domains\Order\ListOrders\ListOrdersUseCase;
 use App\Domains\Order\ListOrders\ListOrdersUseCaseInput;
-use App\Mcp\Mappers\DatabaseToSchema;
-use App\Mcp\Mappers\ValidationToSchema;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\User;
@@ -16,9 +14,8 @@ use Illuminate\JsonSchema\Types\Type;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
-use Laravel\Mcp\Server\Tool;
 
-class ListOrders extends Tool
+class ListOrders extends ValidationTool
 {
     /**
      * The tool's description.
@@ -37,8 +34,6 @@ class ListOrders extends Tool
         return Response::structured(['orders' => $output->orders->toArray()]);
     }
 
-    public function __construct(private ValidationToSchema $mapper) {}
-
     /**
      * Get the tool's input schema.
      *
@@ -46,8 +41,7 @@ class ListOrders extends Tool
      */
     public function schema(JsonSchema $schema): array
     {
-
-        return $this->mapper->map(
+        return $this->validationToSchema->map(
             ListOrdersUseCaseInput::rules()
         );
     }
@@ -59,12 +53,9 @@ class ListOrders extends Tool
      */
     public function outputSchema(JsonSchema $schema): array
     {
-        /** @var DatabaseToSchema $mapper */
-        $mapper = \app(DatabaseToSchema::class);
-
         return [
             'orders' => $schema->array()->items(
-                $mapper->mapModel(new Order, [
+                $this->databaseToSchema->mapModel(new Order, [
                     'status' => new OrderStatus,
                     'user' => new User,
                 ]),

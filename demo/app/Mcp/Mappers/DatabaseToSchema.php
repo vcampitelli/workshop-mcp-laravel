@@ -19,11 +19,11 @@ class DatabaseToSchema
     private JsonSchema $schema;
 
     /**
-     * Objetos já mapeados para evitar reprocessar schemas
+     * Cache dos metadados; cada chamada produz um schema independente.
      *
-     * @var array<string, Types\ObjectType>
+     * @var array<string, list<Column>>
      */
-    private array $pool = [];
+    private array $columns = [];
 
     public function __construct()
     {
@@ -59,14 +59,7 @@ class DatabaseToSchema
         array $hidden = [],
         array $relations = [],
     ): Types\ObjectType {
-        $key = "{$connection}:{$table}";
-
-        if (! isset($this->pool[$key])) {
-            $schema = Schema::connection($connection);
-            $this->pool[$key] = $this->doMapTable($schema, $table, $hidden, $relations);
-        }
-
-        return $this->pool[$key];
+        return $this->doMapTable(Schema::connection($connection), $table, $hidden, $relations);
     }
 
     /**
@@ -88,7 +81,8 @@ class DatabaseToSchema
             $properties = \array_diff_key($properties, \array_flip($hidden));
         }
         foreach ($relations as $field => $model) {
-            $properties[$field] = $this->mapModel($model);
+            // Relações singulares podem não existir, inclusive por soft delete ou global scopes.
+            $properties[$field] = $this->mapModel($model)->nullable();
         }
 
         return $this->schema->object($properties);
@@ -105,9 +99,14 @@ class DatabaseToSchema
     {
         $properties = [];
 
-        /** @var list<Column> $columns */
-        $columns = $schema->getColumns($table);
-        foreach ($columns as $column) {
+        $connection = $schema->getConnection()->getName() ?? config()->string('database.default');
+        $key = "{$connection}:{$table}";
+        if (! isset($this->columns[$key])) {
+            /** @var list<Column> $columns */
+            $columns = $schema->getColumns($table);
+            $this->columns[$key] = $columns;
+        }
+        foreach ($this->columns[$key] as $column) {
             $properties[$column['name']] = $this->mapColumnToSchema($column);
         }
 
