@@ -122,7 +122,7 @@ test('orders can be created, updated and deleted', function () {
 
 test('invalid order data is rejected', function () {
     $this->postJson('/orders', ['user_id' => 999, 'status_id' => 999, 'total_amount' => -1])
-        ->assertUnprocessable()->assertJsonValidationErrors(['user_id', 'status_id', 'total_amount']);
+        ->assertUnprocessable()->assertJsonValidationErrors(['status_id', 'total_amount']);
 
     $id = DB::table('orders')->insertGetId(['user_id' => 1, 'status_id' => 1, 'total_amount' => 50]);
     $this->patchJson("/orders/{$id}", ['total_amount' => null])

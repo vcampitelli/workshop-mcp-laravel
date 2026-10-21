@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Domains\Order\UpdateOrderStatus;
 
 use App\Domains\Shared\UseCaseError;
-use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Models\User;
 
 final class UpdateOrderStatusUseCase
 {
-    public function __invoke(UpdateOrderStatusUseCaseInput $input): UpdateOrderStatusUseCaseOutput
+    public function __invoke(UpdateOrderStatusUseCaseInput $input, User $user): UpdateOrderStatusUseCaseOutput
     {
-        $order = Order::query()->find($input->orderId);
+        $order = $user->orders()->find($input->orderId);
         if ($order === null) {
             return new UpdateOrderStatusUseCaseOutput(error: UseCaseError::NotFound);
         }

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Domains\Order\DeleteOrder;
 
 use App\Domains\Shared\UseCaseError;
-use App\Models\Order;
+use App\Models\User;
 
 final class DeleteOrderUseCase
 {
-    public function __invoke(int $id): DeleteOrderUseCaseOutput
+    public function __invoke(int $id, User $user): DeleteOrderUseCaseOutput
     {
-        $order = Order::query()->find($id);
+        $order = $user->orders()->find($id);
         if ($order === null) {
             return new DeleteOrderUseCaseOutput(error: UseCaseError::NotFound);
         }

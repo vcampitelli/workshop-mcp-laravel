@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Domains\Order\ViewOrder;
 
 use App\Domains\Shared\UseCaseError;
-use App\Models\Order;
+use App\Models\User;
 
 final class ViewOrderUseCase
 {
-    public function __invoke(int $id): ViewOrderUseCaseOutput
+    public function __invoke(int $id, User $user): ViewOrderUseCaseOutput
     {
-        $order = Order::query()->with(['status', 'user'])->find($id);
+        $order = $user->orders()->with(['status', 'user'])->find($id);
 
         return $order === null
             ? new ViewOrderUseCaseOutput(error: UseCaseError::NotFound)

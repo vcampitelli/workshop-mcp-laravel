@@ -29,7 +29,10 @@ class ListOrders extends ValidationTool
      */
     public function handle(Request $request, ListOrdersUseCase $useCase): ResponseFactory
     {
-        $output = $useCase(ListOrdersUseCaseInput::fromArray($request->all()));
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        $output = $useCase(ListOrdersUseCaseInput::fromArray($request->all()), $user);
 
         return Response::structured(['orders' => $output->orders->toArray()]);
     }

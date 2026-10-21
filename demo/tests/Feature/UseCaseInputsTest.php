@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 beforeEach(function () {
     config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
     $this->artisan('migrate', ['--force' => true])->assertExitCode(0);
-    User::factory()->create(['id' => 1]);
+    $this->actingAs(User::factory()->create(['id' => 1]));
     OrderStatus::query()->create(['name' => 'Pendente']);
 });
 
@@ -27,14 +27,12 @@ test('input factories convert numeric strings and preserve zeros and omitted fie
     $created = CreateOrderUseCaseInput::fromArray([
         'user_id' => '1', 'status_id' => '1', 'total_amount' => '0', 'unexpected' => 'ignored',
     ]);
-    expect($created->userId)->toBe(1)
-        ->and($created->statusId)->toBe(1)
+    expect($created->statusId)->toBe(1)
         ->and($created->totalAmount)->toBe(0.0);
 
     $updated = UpdateOrderUseCaseInput::fromArray(['order_id' => '42', 'total_amount' => '0']);
     expect($updated->orderId)->toBe(42)
         ->and($updated->totalAmount)->toBe(0.0)
-        ->and($updated->userId)->toBeNull()
         ->and($updated->statusId)->toBeNull();
 
     $filters = ListOrdersUseCaseInput::fromArray(['status_id' => '1', 'amount_lt' => '0']);
@@ -64,7 +62,7 @@ test('invalid arrays produce Laravel validation errors before constructing an in
             ->and(array_keys($exception->errors()))->toBe($fields);
     }
 })->with([
-    'create' => [CreateOrderUseCaseInput::class, ['user_id' => 999, 'status_id' => 1, 'total_amount' => -1], ['user_id', 'total_amount']],
+    'create' => [CreateOrderUseCaseInput::class, ['user_id' => 999, 'status_id' => 1, 'total_amount' => -1], ['total_amount']],
     'partial update' => [UpdateOrderUseCaseInput::class, ['order_id' => 42, 'total_amount' => null], ['total_amount']],
     'order filters' => [ListOrdersUseCaseInput::class, ['after' => 'invalid date', 'amount_lt' => []], ['after', 'amount_lt']],
     'order status' => [UpdateOrderStatusUseCaseInput::class, ['order_id' => 42], ['status_id']],

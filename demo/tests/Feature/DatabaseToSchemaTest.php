@@ -36,7 +36,7 @@ test('order relationship schema accepts the types actually returned by the tool'
     $user = User::factory()->create();
     $status = OrderStatus::query()->create(['name' => 'Pendente']);
     Order::query()->create([
-        'user_id' => $scenario === 'missing' ? null : $user->id,
+        'user_id' => $user->id,
         'status_id' => $scenario === 'missing' ? null : $status->id,
         'total_amount' => 50,
     ]);
@@ -45,13 +45,14 @@ test('order relationship schema accepts the types actually returned by the tool'
         $user->delete();
     }
 
+    $this->actingAs($user);
     $tool = app(ListOrders::class);
     $content = $tool->handle(new Request([]), new ListOrdersUseCase)->getStructuredContent();
     $properties = $tool->toArray()['outputSchema']['properties']['orders']['items']['properties'];
 
     expect($content['orders'])->toHaveCount(1);
     $order = $content['orders'][0];
-    expect($order['user'] === null)->toBe($scenario !== 'present')
+    expect($order['user'] === null)->toBe($scenario === 'deleted user')
         ->and($order['status'] === null)->toBe($scenario === 'missing');
 
     foreach (['user', 'status'] as $relation) {

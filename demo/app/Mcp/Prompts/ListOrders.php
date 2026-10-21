@@ -50,9 +50,6 @@ class ListOrders extends Prompt
         if ($input->statusId !== null) {
             $clausules[] = "com ID de status {$input->statusId}";
         }
-        if ($input->userId !== null) {
-            $clausules[] = "pelo usuário {$input->userId}";
-        }
         if ($input->after !== null) {
             $clausules[] = "após a data {$input->after}";
         }

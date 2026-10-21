@@ -4,20 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domains\Order\ListOrders;
 
-use App\Models\Order;
+use App\Models\User;
 
 final class ListOrdersUseCase
 {
-    public function __invoke(ListOrdersUseCaseInput $input): ListOrdersUseCaseOutput
+    public function __invoke(ListOrdersUseCaseInput $input, User $user): ListOrdersUseCaseOutput
     {
-        $query = Order::query();
+        $query = $user->orders();
 
         if ($input->statusId !== null) {
             $query->where('status_id', '=', $input->statusId);
-        }
-
-        if ($input->userId !== null) {
-            $query->where('user_id', '=', $input->userId);
         }
 
         if ($input->after !== null) {

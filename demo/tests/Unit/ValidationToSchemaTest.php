@@ -24,9 +24,8 @@ test('serialized create order schema declares required integer identifiers and n
 
     expect($json)->toEqual([
         'type' => 'object',
-        'required' => ['user_id', 'status_id', 'total_amount'],
+        'required' => ['status_id', 'total_amount'],
         'properties' => [
-            'user_id' => ['type' => 'integer', 'description' => 'ID do usuário'],
             'status_id' => ['type' => 'integer', 'description' => 'ID do status do pedido'],
             'total_amount' => ['type' => 'number', 'minimum' => 0, 'description' => 'Valor total do pedido'],
         ],

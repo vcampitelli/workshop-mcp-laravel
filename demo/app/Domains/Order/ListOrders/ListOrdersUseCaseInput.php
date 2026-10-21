@@ -8,12 +8,11 @@ use App\Domains\Shared\UseCaseInput;
 use App\Rules\TitleAttribute;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/** @extends UseCaseInput<array{status_id?: int|string, user_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string}> */
+/** @extends UseCaseInput<array{status_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string}> */
 final readonly class ListOrdersUseCaseInput extends UseCaseInput
 {
     public function __construct(
         public ?int $statusId = null,
-        public ?int $userId = null,
         public ?string $after = null,
         public ?string $before = null,
         public ?float $amountLt = null,
@@ -25,7 +24,6 @@ final readonly class ListOrdersUseCaseInput extends UseCaseInput
     {
         return [
             'status_id' => ['sometimes', 'integer', 'exists:order_statuses,id', new TitleAttribute('ID do status do pedido')],
-            'user_id' => ['sometimes', 'integer', 'exists:users,id', new TitleAttribute('ID do usuário')],
             'after' => ['sometimes', 'string', 'date', new TitleAttribute('Pedidos depois dessa data')],
             'before' => ['sometimes', 'string', 'date', new TitleAttribute('Pedidos antes dessa data')],
             'amount_lt' => ['sometimes', 'numeric', new TitleAttribute('Valor menor que')],
@@ -33,12 +31,11 @@ final readonly class ListOrdersUseCaseInput extends UseCaseInput
         ];
     }
 
-    /** @param array{status_id?: int|string, user_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string} $data */
+    /** @param array{status_id?: int|string, after?: string, before?: string, amount_lt?: int|float|string, amount_gt?: int|float|string} $data */
     protected static function fromValidatedArray(array $data): static
     {
         return new self(
             statusId: isset($data['status_id']) ? (int) $data['status_id'] : null,
-            userId: isset($data['user_id']) ? (int) $data['user_id'] : null,
             after: isset($data['after']) ? (string) $data['after'] : null,
             before: isset($data['before']) ? (string) $data['before'] : null,
             amountLt: isset($data['amount_lt']) ? (float) $data['amount_lt'] : null,

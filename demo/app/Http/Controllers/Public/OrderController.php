@@ -19,6 +19,7 @@ use App\Domains\Order\ViewOrder\ViewOrderUseCase;
 use App\Domains\Shared\UseCaseError;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -32,7 +33,7 @@ class OrderController extends Controller implements HasMiddleware
 
     public function index(Request $request, ListOrdersUseCase $useCase): JsonResponse
     {
-        $output = $useCase(ListOrdersUseCaseInput::fromArray($request->all()));
+        $output = $useCase(ListOrdersUseCaseInput::fromArray($request->all()), $this->authenticatedUser($request));
 
         return response()->json($output->orders);
     }
@@ -44,7 +45,7 @@ class OrderController extends Controller implements HasMiddleware
 
     public function store(Request $request, CreateOrderUseCase $useCase): JsonResponse
     {
-        $output = $useCase(CreateOrderUseCaseInput::fromArray($request->all()));
+        $output = $useCase(CreateOrderUseCaseInput::fromArray($request->all()), $this->authenticatedUser($request));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
@@ -52,9 +53,9 @@ class OrderController extends Controller implements HasMiddleware
         return response()->json($output->order, 201);
     }
 
-    public function show(Order $order, ViewOrderUseCase $useCase): JsonResponse
+    public function show(Request $request, Order $order, ViewOrderUseCase $useCase): JsonResponse
     {
-        $output = $useCase($order->id);
+        $output = $useCase($order->id, $this->authenticatedUser($request));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
@@ -62,9 +63,9 @@ class OrderController extends Controller implements HasMiddleware
         return response()->json($output->order);
     }
 
-    public function edit(Order $order, PrepareEditOrderUseCase $useCase): JsonResponse
+    public function edit(Request $request, Order $order, PrepareEditOrderUseCase $useCase): JsonResponse
     {
-        $output = $useCase($order->id);
+        $output = $useCase($order->id, $this->authenticatedUser($request));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
@@ -74,7 +75,7 @@ class OrderController extends Controller implements HasMiddleware
 
     public function update(Request $request, Order $order, UpdateOrderUseCase $useCase): JsonResponse
     {
-        $output = $useCase(UpdateOrderUseCaseInput::fromArray(array_replace($request->all(), ['order_id' => $order->id])));
+        $output = $useCase(UpdateOrderUseCaseInput::fromArray(array_replace($request->all(), ['order_id' => $order->id])), $this->authenticatedUser($request));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
@@ -82,9 +83,9 @@ class OrderController extends Controller implements HasMiddleware
         return response()->json($output->order);
     }
 
-    public function destroy(Order $order, DeleteOrderUseCase $useCase): JsonResponse
+    public function destroy(Request $request, Order $order, DeleteOrderUseCase $useCase): JsonResponse
     {
-        $output = $useCase($order->id);
+        $output = $useCase($order->id, $this->authenticatedUser($request));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
@@ -94,11 +95,19 @@ class OrderController extends Controller implements HasMiddleware
 
     public function updateStatus(Request $request, Order $order, UpdateOrderStatusUseCase $useCase): JsonResponse
     {
-        $output = $useCase(UpdateOrderStatusUseCaseInput::fromArray(array_replace($request->all(), ['order_id' => $order->id])));
+        $output = $useCase(UpdateOrderStatusUseCaseInput::fromArray(array_replace($request->all(), ['order_id' => $order->id])), $this->authenticatedUser($request));
         if ($output->error !== null) {
             abort($output->error === UseCaseError::NotFound ? 404 : 422);
         }
 
         return response()->json($output->order);
+    }
+
+    private function authenticatedUser(Request $request): User
+    {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        return $user;
     }
 }
