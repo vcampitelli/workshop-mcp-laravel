@@ -148,6 +148,9 @@ h1:not(.title, :last-child) {
 .text-muted {
   color: rgb(var(--gray-400));
 }
+.text-center {
+  text-align: center;
+}
 b.mark {
   color: var(--code-inline-color);
 }

@@ -758,13 +758,15 @@
                     </section>
                     <section>
                         <h1 class="title"><i class="ti ti-id-badge-2"></i> Autorização</h1>
-                        <pre><code class="php" data-trim>
-                            // Dentro de handle(Request $request)
-                            if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
-                                return Response::error(&#x27;Sem permissão para listar pedidos.&#x27;);
-                            }
+                        <pre><kbd>MyTool.php</kbd><code class="php" data-trim>
+                            public function handle(Request $request): Response
+                            {
+                                if (! $request-&gt;user()-&gt;can(&#x27;viewAny&#x27;, Order::class)) {
+                                    return Response::error(&#x27;Sem permissão para listar pedidos.&#x27;);
+                                }
 
-                            // Consulte apenas os pedidos permitidos para esse usuário.
+                                // Consulte apenas os pedidos permitidos para esse usuário.
+                            }
                         </code></pre>
                         <div class="mcp-columns">
                             <div>
@@ -978,7 +980,7 @@
                         <ol start="3">
                             <li>
                                 Vincule a <code>Tool</code>:
-                                <pre><kbd>MyTool</kbd><code class="php" data-trim>
+                                <pre><kbd>MyTool.php</kbd><code class="php" data-trim>
                                     use App\Mcp\Resources\OrdersDashboardApp;
                                     use Laravel\Mcp\Server\Attributes\RendersApp;
 
