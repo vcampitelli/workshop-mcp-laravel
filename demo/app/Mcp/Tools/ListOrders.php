@@ -32,8 +32,7 @@ class ListOrders extends ValidationTool
      */
     public function handle(Request $request, ListOrdersUseCase $useCase): ResponseFactory
     {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->user($request);
 
         $output = $useCase(ListOrdersUseCaseInput::fromArray($request->all()), $user);
 

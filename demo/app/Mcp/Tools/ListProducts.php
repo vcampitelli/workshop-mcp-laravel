@@ -18,7 +18,7 @@ class ListProducts extends Tool
      */
     public function handle(Request $request): \Generator
     {
-        $query = Product::query();
+        $query = Product::limit(10);
         $total = (clone $query)->count();
 
         /** @var Product $product */
@@ -26,9 +26,9 @@ class ListProducts extends Tool
             yield Response::notification('processing/progress', [
                  'current' => $i + 1,
                  'total' => $total,
-             ]);
-             yield Response::text($product->name);
-             sleep(1);
+                 'product' => $product->name,
+            ]);
+            sleep(1);
         }
     }
 

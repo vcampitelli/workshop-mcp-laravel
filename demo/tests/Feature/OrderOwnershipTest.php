@@ -12,7 +12,7 @@ use App\Domains\Order\UpdateOrderStatus\UpdateOrderStatusUseCase;
 use App\Domains\Order\UpdateOrderStatus\UpdateOrderStatusUseCaseInput;
 use App\Domains\Order\ViewOrder\ViewOrderUseCase;
 use App\Domains\Shared\UseCaseError;
-use App\Mcp\Servers\OrdersServer;
+use App\Mcp\Servers\EcommerceServer;
 use App\Mcp\Tools\ListOrders;
 use App\Models\Order;
 use App\Models\OrderStatus;
@@ -96,11 +96,16 @@ test('MCP lists only the authenticated users orders and omits the user filter fr
     $content = $tool->handle(new Request(['user_id' => $this->other->id]), new ListOrdersUseCase)->getStructuredContent();
     expect(array_column($content['orders'], 'id'))->toBe([$this->ownOrder->id])
         ->and($tool->toArray()['inputSchema']['properties'])->not->toHaveKey('user_id');
-    OrdersServer::tool(ListOrders::class, ['user_id' => $this->other->id])->assertStructuredContent($content);
+    EcommerceServer::tool(ListOrders::class, ['user_id' => $this->other->id])->assertStructuredContent($content);
 });
 
 test('MCP rejects unauthenticated calls even with a supplied user id', function () {
-    $this->postJson('/mcp/orders', ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => 'list-orders']])->assertUnauthorized();
+    $this->postJson('/mcp', [
+        'jsonrpc' => '2.0',
+        'id' => 1,
+        'method' => 'tools/call',
+        'params' => ['name' => 'list-orders', 'arguments' => ['user_id' => $this->owner->id]],
+    ])->assertUnauthorized();
     expect(fn () => app(ListOrders::class)->handle(new Request(['user_id' => $this->owner->id]), new ListOrdersUseCase))
         ->toThrow(HttpException::class);
 });

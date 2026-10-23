@@ -10,7 +10,7 @@ use App\Domains\Product\ListProducts\ListProductsUseCaseInput;
 use App\Domains\ProductCategory\ListProductCategories\ListProductCategoriesUseCaseInput;
 use App\Domains\Review\ListProductReviews\ListProductReviewsUseCaseInput;
 use App\Mcp\Prompts\ListOrders as ListOrdersPrompt;
-use App\Mcp\Servers\OrdersServer;
+use App\Mcp\Servers\EcommerceServer;
 use App\Mcp\Tools\ListOrders as ListOrdersTool;
 use App\Models\OrderStatus;
 use App\Models\User;
@@ -74,13 +74,13 @@ test('invalid arrays produce Laravel validation errors before constructing an in
 ]);
 
 test('MCP tool and prompt translate input validation exceptions through their native handlers', function () {
-    OrdersServer::tool(ListOrdersTool::class, ['amount_lt' => 'invalid'])
+    EcommerceServer::tool(ListOrdersTool::class, ['amount_lt' => 'invalid'])
         ->assertHasErrors(['The amount lt field must be a number.']);
-    OrdersServer::prompt(ListOrdersPrompt::class, ['after' => 'invalid'])
+    EcommerceServer::prompt(ListOrdersPrompt::class, ['after' => 'invalid'])
         ->assertHasErrors(['after']);
 });
 
 test('MCP prompt retains a zero filter after constructing its input', function () {
-    OrdersServer::prompt(ListOrdersPrompt::class, ['amount_lt' => '0'])
+    EcommerceServer::prompt(ListOrdersPrompt::class, ['amount_lt' => '0'])
         ->assertSee('com preço menor que R$0');
 });
